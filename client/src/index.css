@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 265 100% 48%;
+    --secondary-foreground: 0 0% 98%;
+    --accent: 12 60% 60%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
+
+    --success: 142 76% 37%;
+    --success-foreground: 210 40% 98%;
+    --warning: 48 100% 50%;
+    --warning-foreground: 240 10% 3.9%;
+    --danger: 0 72% 51%;
+    --danger-foreground: 210 40% 98%;
+
+    --chart-1: var(--primary);
+    --chart-2: var(--secondary);
+    --chart-3: var(--warning);
+    --chart-4: var(--success);
+    --chart-5: var(--accent);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: 
+      radial-gradient(circle at 15% 50%, hsla(var(--primary)/0.08) 0%, transparent 25%),
+      radial-gradient(circle at 85% 30%, hsla(var(--secondary)/0.08) 0%, transparent 25%);
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .neumorphic {
+    box-shadow: 
+      inset 2px 2px 5px rgba(255, 255, 255, 0.08),
+      inset -2px -2px 5px rgba(0, 0, 0, 0.5),
+      5px 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .device-card {
+    @apply transition-all duration-300;
+  }
+
+  .device-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .device-card.active {
+    @apply border-primary/50;
+    box-shadow: 0 0 15px hsla(var(--primary)/0.3);
+  }
+
+  .chart-line {
+    fill: none;
+    stroke: hsl(var(--primary));
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .chart-area {
+    fill: url(#gradient);
+    opacity: 0.3;
+  }
+
+  .card-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  .card-3d-inner {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(20px) rotateX(2deg) rotateY(2deg);
+  }
+
+  .card-3d:hover .card-3d-inner {
+    transform: translateZ(30px) rotateX(4deg) rotateY(4deg);
+  }
+}
