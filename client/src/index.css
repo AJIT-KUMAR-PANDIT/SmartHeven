@@ -103,4 +103,68 @@
   .card-3d:hover .card-3d-inner {
     transform: translateZ(30px) rotateX(4deg) rotateY(4deg);
   }
+  
+  /* Advanced animations */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientAnimation 8s ease infinite;
+  }
+
+  @keyframes gradientAnimation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .hover-float {
+    transition: transform 0.3s ease;
+  }
+  
+  .hover-float:hover {
+    transform: translateY(-8px);
+  }
+  
+  .pulse-shadow {
+    animation: pulseShadow 3s infinite;
+  }
+  
+  @keyframes pulseShadow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 15px rgba(33, 150, 243, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    }
+  }
+  
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmerEffect 2s infinite;
+  }
+  
+  @keyframes shimmerEffect {
+    100% {
+      left: 150%;
+    }
+  }
 }

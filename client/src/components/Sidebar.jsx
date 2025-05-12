@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useLocation, Link } from 'wouter';
 import { useState } from 'react';
+import { useTheme } from '@/components/ui/theme-provider.jsx';
 import { 
   Home, 
   Smartphone, 
@@ -10,12 +11,16 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 
 const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
   const [location] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const navItems = [
     { path: '/', icon: Home, label: 'Dashboard' },
@@ -110,6 +115,40 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
         </div>
 
         <div className="mt-auto">
+          {/* Theme Toggle */}
+          <div className="glass rounded-xl p-4 mb-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-medium">Theme Mode</h3>
+              <span className="text-xs text-primary capitalize">{theme}</span>
+            </div>
+            <div className="flex space-x-2">
+              <motion.button 
+                className={`flex-1 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center ${theme === 'light' ? 'bg-primary/20 text-primary' : 'hover:bg-white/10'}`}
+                onClick={() => setTheme('light')}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Sun size={14} className="mr-1" />
+                Light
+              </motion.button>
+              <motion.button 
+                className={`flex-1 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center ${theme === 'dark' ? 'bg-primary/20 text-primary' : 'hover:bg-white/10'}`}
+                onClick={() => setTheme('dark')}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Moon size={14} className="mr-1" />
+                Dark
+              </motion.button>
+              <motion.button 
+                className={`flex-1 py-2 rounded-lg text-xs font-medium transition flex items-center justify-center ${theme === 'system' ? 'bg-primary/20 text-primary' : 'hover:bg-white/10'}`}
+                onClick={() => setTheme('system')}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Monitor size={14} className="mr-1" />
+                Auto
+              </motion.button>
+            </div>
+          </div>
+          
           {/* Modes Control */}
           <div className="glass rounded-xl p-4">
             <div className="flex justify-between items-center mb-3">
@@ -117,15 +156,24 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
               <span className="text-xs text-success">Active</span>
             </div>
             <div className="flex space-x-2">
-              <button className="flex-1 py-2 rounded-lg text-xs font-medium bg-dark-200 hover:bg-dark-100 transition">
+              <motion.button 
+                className="flex-1 py-2 rounded-lg text-xs font-medium bg-dark-200 hover:bg-dark-100 transition"
+                whileTap={{ scale: 0.95 }}
+              >
                 Home
-              </button>
-              <button className="flex-1 py-2 rounded-lg text-xs font-medium hover:bg-dark-200 transition">
+              </motion.button>
+              <motion.button 
+                className="flex-1 py-2 rounded-lg text-xs font-medium hover:bg-dark-200 transition"
+                whileTap={{ scale: 0.95 }}
+              >
                 Away
-              </button>
-              <button className="flex-1 py-2 rounded-lg text-xs font-medium hover:bg-dark-200 transition">
+              </motion.button>
+              <motion.button 
+                className="flex-1 py-2 rounded-lg text-xs font-medium hover:bg-dark-200 transition"
+                whileTap={{ scale: 0.95 }}
+              >
                 Night
-              </button>
+              </motion.button>
             </div>
           </div>
 
