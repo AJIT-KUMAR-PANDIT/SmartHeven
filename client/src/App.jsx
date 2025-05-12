@@ -8,28 +8,54 @@ import Router from './Router';
 import MobileNav from '@/components/MobileNav';
 import Sidebar from '@/components/Sidebar';
 import TopNav from '@/components/TopNav';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getAllItems, initDatabase } from '@/lib/database';
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [rooms, setRooms] = useState([]);
+  const [devices, setDevices] = useState([]);
+  const [activeRoom, setActiveRoom] = useState(null);
+
+  // Initialize database and load data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await initDatabase();
+        const loadedRooms = await getAllItems('rooms');
+        const loadedDevices = await getAllItems('devices');
+        setRooms(loadedRooms);
+        setDevices(loadedDevices);
+        if (loadedRooms.length > 0) {
+          setActiveRoom(loadedRooms[0].id);
+        }
+      } catch (err) {
+        console.error('Error loading data:', err);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
         <TooltipProvider>
-          <Toaster />
-          <div className="flex h-screen bg-background">
-            <Sidebar 
-              isMobileOpen={isMobileMenuOpen} 
-              setIsMobileOpen={setIsMobileMenuOpen} 
-            />
-            <div className="flex-1 flex flex-col min-h-screen">
-              <TopNav />
-              <main className="flex-1 overflow-y-auto pt-16 pb-20 md:pb-0">
+          <div className="min-h-screen bg-background">
+            <TopNav />
+            <div className="flex h-[calc(100vh-4rem)]">
+              <Sidebar 
+                isMobileOpen={isMobileMenuOpen}
+                setIsMobileOpen={setIsMobileMenuOpen}
+                rooms={rooms}
+                activeRoom={activeRoom}
+                onRoomChange={setActiveRoom}
+              />
+              <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
                 <Router />
               </main>
-              <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
             </div>
+            <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
+            <Toaster />
           </div>
         </TooltipProvider>
       </ThemeProvider>
