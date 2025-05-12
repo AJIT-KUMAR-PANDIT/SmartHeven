@@ -41,6 +41,10 @@ function App() {
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
         <TooltipProvider>
           <div className="min-h-screen bg-background">
+  <script
+    authed="location.reload()"
+    src="https://auth.util.repl.co/script.js"
+  ></script>
             <TopNav />
             <div className="flex h-[calc(100vh-4rem)]">
               <Sidebar 

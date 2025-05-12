@@ -125,6 +125,10 @@ export async function getItem(tableName, id) {
 }
 
 export async function saveItem(tableName, item) {
+  if (!requireAuth(['admin', 'user'])) {
+    throw new Error('Permission denied');
+  }
+  
   if (!item || !item.id) {
     throw new Error('Invalid item data - ID is required');
   }
