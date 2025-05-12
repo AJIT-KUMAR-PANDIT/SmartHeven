@@ -1,27 +1,81 @@
 
-import { Pool } from 'pg';
-import { openDB, deleteDB, wrap, unwrap } from 'idb';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 
-// Initialize IndexedDB for offline storage
-const initIndexedDB = async () => {
-  const db = await openDB('smartHomeDB', 1, {
-    upgrade(db) {
-      ['devices', 'rooms', 'scenes', 'automations', 'settings'].forEach(store => {
-        if (!db.objectStoreNames.contains(store)) {
-          db.createObjectStore(store, { keyPath: 'id' });
-        }
-      });
-    },
-  });
-  return db;
+const DB_NAME = 'smarthome.db';
+const sqlite = new SQLiteConnection(CapacitorSQLite);
+let _db = null;
+
+const initWebStore = async () => {
+  const platform = Capacitor.getPlatform();
+  if (platform === 'web') {
+    await sqlite.initWebStore();
+  }
 };
 
-// Database operations with offline support
+const getDb = async () => {
+  if (!_db) {
+    await initWebStore();
+    const ret = await sqlite.createConnection(
+      DB_NAME,
+      false,
+      'no-encryption',
+      1,
+      false
+    );
+    _db = ret;
+  }
+  return _db;
+};
+
 export async function initDatabase() {
   try {
-    const db = await initIndexedDB();
-    const response = await fetch('/api/init', { method: 'POST' });
-    if (!response.ok) throw new Error('Failed to initialize database');
+    const db = await getDb();
+    await db.open();
+
+    const queries = [
+      `CREATE TABLE IF NOT EXISTS devices (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        room TEXT NOT NULL,
+        status TEXT NOT NULL,
+        value REAL,
+        battery REAL,
+        lastUpdated INTEGER,
+        connected INTEGER,
+        firmware TEXT,
+        settings TEXT
+      )`,
+      `CREATE TABLE IF NOT EXISTS rooms (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        floor INTEGER,
+        icon TEXT,
+        devices TEXT
+      )`,
+      `CREATE TABLE IF NOT EXISTS scenes (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        icon TEXT,
+        actions TEXT,
+        isActive INTEGER,
+        lastTriggered INTEGER
+      )`,
+      `CREATE TABLE IF NOT EXISTS automations (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        trigger TEXT,
+        actions TEXT,
+        isEnabled INTEGER,
+        lastTriggered INTEGER
+      )`
+    ];
+
+    for (const query of queries) {
+      await db.execute(query);
+    }
     return true;
   } catch (err) {
     console.error('Database initialization error:', err);
@@ -31,52 +85,75 @@ export async function initDatabase() {
 
 export async function getAllItems(tableName) {
   try {
-    const response = await fetch(`/api/${tableName}`);
-    if (!response.ok) throw new Error(`Failed to fetch ${tableName}`);
-    const data = await response.json();
-    
-    // Store in IndexedDB for offline access
-    const db = await initIndexedDB();
-    const tx = db.transaction(tableName, 'readwrite');
-    const store = tx.objectStore(tableName);
-    await Promise.all(data.map(item => store.put(item)));
-    
-    return data;
+    const db = await getDb();
+    const result = await db.query(`SELECT * FROM ${tableName}`);
+    return result.values.map(item => {
+      // Parse JSON fields
+      ['settings', 'devices', 'actions', 'trigger'].forEach(field => {
+        if (item[field]) {
+          try {
+            item[field] = JSON.parse(item[field]);
+          } catch (e) {}
+        }
+      });
+      // Convert boolean fields
+      ['connected', 'isActive', 'isEnabled'].forEach(field => {
+        if (item[field] !== undefined) {
+          item[field] = Boolean(item[field]);
+        }
+      });
+      return item;
+    });
   } catch (err) {
     console.error(`Error fetching ${tableName}:`, err);
-    // Fallback to IndexedDB if offline
-    const db = await initIndexedDB();
-    return db.getAll(tableName);
+    return [];
   }
 }
 
 export async function getItem(tableName, id) {
   try {
-    const response = await fetch(`/api/${tableName}/${id}`);
-    if (!response.ok) throw new Error(`Failed to fetch ${tableName} item`);
-    return await response.json();
+    const db = await getDb();
+    const result = await db.query(
+      `SELECT * FROM ${tableName} WHERE id = ?`,
+      [id]
+    );
+    return result.values[0];
   } catch (err) {
     console.error(`Error fetching ${tableName} item:`, err);
-    const db = await initIndexedDB();
-    return db.get(tableName, id);
+    return null;
   }
 }
 
 export async function saveItem(tableName, item) {
+  if (!item || !item.id) {
+    throw new Error('Invalid item data - ID is required');
+  }
+
   try {
-    const response = await fetch(`/api/${tableName}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item)
+    const db = await getDb();
+    const fields = Object.keys(item);
+    const values = fields.map(field => {
+      const value = item[field];
+      if (typeof value === 'object') {
+        return JSON.stringify(value);
+      }
+      if (typeof value === 'boolean') {
+        return value ? 1 : 0;
+      }
+      return value;
     });
-    if (!response.ok) throw new Error(`Failed to save ${tableName} item`);
-    const savedItem = await response.json();
     
-    // Update IndexedDB
-    const db = await initIndexedDB();
-    await db.put(tableName, savedItem);
+    const placeholders = fields.map(() => '?').join(', ');
+    const updateFields = fields.map(field => `${field} = ?`).join(', ');
     
-    return savedItem;
+    const query = `
+      INSERT INTO ${tableName} (${fields.join(', ')})
+      VALUES (${placeholders})
+      ON CONFLICT(id) DO UPDATE SET ${updateFields}
+    `;
+    
+    await db.run(query, [...values, ...values]);
+    return item;
   } catch (err) {
     console.error(`Error saving ${tableName} item:`, err);
     throw err;
@@ -85,15 +162,8 @@ export async function saveItem(tableName, item) {
 
 export async function deleteItem(tableName, id) {
   try {
-    const response = await fetch(`/api/${tableName}/${id}`, {
-      method: 'DELETE'
-    });
-    if (!response.ok) throw new Error(`Failed to delete ${tableName} item`);
-    
-    // Remove from IndexedDB
-    const db = await initIndexedDB();
-    await db.delete(tableName, id);
-    
+    const db = await getDb();
+    await db.run(`DELETE FROM ${tableName} WHERE id = ?`, [id]);
     return true;
   } catch (err) {
     console.error(`Error deleting ${tableName} item:`, err);
