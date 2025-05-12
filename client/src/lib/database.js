@@ -163,7 +163,7 @@ export const getItem = async (collectionName, id) => {
   return db[collectionName].findOne(id).exec();
 };
 
-export const saveItem = async (collectionName, item) => {
+export const save = async (collectionName, id, item) => {
   const db = await getDb();
   if (!item.id && collectionName !== "settings") {
     item.id = generateId();
