@@ -31,7 +31,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
   const [selectedType, setSelectedType] = useState(roomTypes[0]);
   const [floor, setFloor] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Populate form if editing
   useEffect(() => {
     if (isOpen) {
@@ -49,13 +49,13 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
       }
     }
   }, [isOpen, editRoom]);
-  
+
   const handleSubmit = async () => {
     if (!roomName.trim()) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Prepare room data
       const roomData = {
         id: editRoom?.id || jsonDB.generateId(),
@@ -65,11 +65,11 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         floor: parseInt(floor),
         devices: editRoom?.devices || []
       };
-      
+
       // Save to database
       await jsonDB.init();
       await jsonDB.save('rooms', roomData.id, roomData);
-      
+
       setIsLoading(false);
       onClose();
     } catch (error) {
@@ -77,7 +77,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <Modal 
       isOpen={isOpen} 
@@ -96,7 +96,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             placeholder="Enter room name"
             className="w-full px-4 py-3 rounded-lg glass border border-white/10 bg-white/5 focus:outline-none focus:border-primary/50"
           />
-          
+
           {/* Random name generator */}
           <motion.button
             whileTap={{ scale: 0.97 }}
@@ -111,7 +111,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             Generate random name
           </motion.button>
         </div>
-        
+
         {/* Room Type */}
         <div>
           <label className="block text-sm mb-2">Room Type</label>
@@ -136,7 +136,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             ))}
           </div>
         </div>
-        
+
         {/* Floor */}
         <div>
           <label className="block text-sm mb-2">Floor</label>
@@ -167,7 +167,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
           <motion.button
@@ -177,7 +177,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
           >
             Cancel
           </motion.button>
-          
+
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleSubmit}

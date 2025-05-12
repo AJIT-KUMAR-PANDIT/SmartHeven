@@ -35,7 +35,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [availableDevices, setAvailableDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Get all devices when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -45,19 +45,19 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
           await jsonDB.init();
           const devices = await jsonDB.getAllItems('devices');
           setAvailableDevices(devices || []);
-          
+
           // If editing, populate form
           if (editScene) {
             setSceneName(editScene.name);
             setSelectedIcon(icons.find(i => i.name === editScene.icon) || icons[0]);
-            
+
             // Find devices included in scene actions
             if (editScene.actions && Array.isArray(editScene.actions)) {
               const sceneDevices = editScene.actions.map(action => ({
                 ...devices.find(d => d.id === action.deviceId),
                 action: action.changes
               })).filter(Boolean);
-              
+
               setSelectedDevices(sceneDevices);
             }
           } else {
@@ -70,15 +70,15 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
           console.error('Failed to load devices:', error);
         }
       };
-      
+
       loadDevices();
     }
   }, [isOpen, editScene]);
-  
+
   const handleAddDevice = (device) => {
     // Check if device already selected
     if (selectedDevices.some(d => d.id === device.id)) return;
-    
+
     setSelectedDevices([...selectedDevices, {
       ...device,
       action: {
@@ -86,11 +86,11 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
       }
     }]);
   };
-  
+
   const handleRemoveDevice = (deviceId) => {
     setSelectedDevices(selectedDevices.filter(d => d.id !== deviceId));
   };
-  
+
   const handleToggleDeviceAction = (deviceId, field, value) => {
     setSelectedDevices(selectedDevices.map(device => {
       if (device.id === deviceId) {
@@ -105,13 +105,13 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
       return device;
     }));
   };
-  
+
   const handleSubmit = async () => {
     if (!sceneName.trim() || selectedDevices.length === 0) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Prepare the scene object
       const sceneData = {
         id: editScene?.id || jsonDB.generateId(),
@@ -124,11 +124,11 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
         isActive: false,
         lastTriggered: null
       };
-      
+
       // Save to database
       await jsonDB.init();
       await jsonDB.saveScene(sceneData);
-      
+
       setIsLoading(false);
       onClose();
     } catch (error) {
@@ -136,7 +136,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <Modal 
       isOpen={isOpen} 
@@ -156,7 +156,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
             className="w-full px-4 py-3 rounded-lg glass border border-white/10 bg-white/5 focus:outline-none focus:border-primary/50"
           />
         </div>
-        
+
         {/* Icon Selection */}
         <div>
           <label className="block text-sm mb-2">Icon</label>
@@ -180,14 +180,14 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
             ))}
           </div>
         </div>
-        
+
         {/* Device Actions */}
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm">Devices & Actions</label>
             <div className="text-xs text-primary">{selectedDevices.length} selected</div>
           </div>
-          
+
           {/* Selected Devices */}
           <div className="max-h-44 overflow-y-auto custom-scrollbar space-y-2 mb-4">
             {selectedDevices.length === 0 ? (
@@ -210,7 +210,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                       <div className="text-xs opacity-60">{device.type}</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <select
                       value={device.action.status || 'toggle'}
@@ -221,7 +221,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                       <option value="off">Turn OFF</option>
                       <option value="toggle">Toggle</option>
                     </select>
-                    
+
                     <button 
                       onClick={() => handleRemoveDevice(device.id)}
                       className="p-1 rounded-lg hover:bg-white/10"
@@ -233,7 +233,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
               ))
             )}
           </div>
-          
+
           {/* Available Devices */}
           <div className="mb-2">
             <div className="flex justify-between items-center mb-2">
@@ -275,7 +275,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
           <motion.button
@@ -285,7 +285,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
           >
             Cancel
           </motion.button>
-          
+
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleSubmit}

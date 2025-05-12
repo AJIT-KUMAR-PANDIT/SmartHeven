@@ -32,7 +32,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
   const [selectedRoom, setSelectedRoom] = useState('');
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Load rooms and populate form if editing
   useEffect(() => {
     if (isOpen) {
@@ -41,11 +41,11 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           await jsonDB.init();
           const roomsData = await jsonDB.getAllItems('rooms');
           setRooms(roomsData || []);
-          
+
           if (roomsData?.length > 0 && !selectedRoom) {
             setSelectedRoom(roomsData[0].id);
           }
-          
+
           // If editing, populate form
           if (editDevice) {
             setDeviceName(editDevice.name);
@@ -67,17 +67,17 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           console.error('Failed to load data:', error);
         }
       };
-      
+
       loadData();
     }
   }, [isOpen, editDevice]);
-  
+
   const handleSubmit = async () => {
     if (!deviceName.trim() || !selectedRoom) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Prepare device data
       const deviceData = {
         id: editDevice?.id || jsonDB.generateId(),
@@ -92,11 +92,11 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
         firmware: '1.0.0',
         settings: {}
       };
-      
+
       // Save to database
       await jsonDB.init();
       await jsonDB.save('devices', deviceData.id, deviceData);
-      
+
       setIsLoading(false);
       onClose();
     } catch (error) {
@@ -104,7 +104,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <Modal 
       isOpen={isOpen} 
@@ -124,7 +124,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             className="w-full px-4 py-3 rounded-lg glass border border-white/10 bg-white/5 focus:outline-none focus:border-primary/50"
           />
         </div>
-        
+
         {/* Device Type */}
         <div>
           <label className="block text-sm mb-2">Device Type</label>
@@ -149,7 +149,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             ))}
           </div>
         </div>
-        
+
         {/* Room Selection */}
         <div>
           <div className="flex justify-between items-center mb-2">
@@ -158,7 +158,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
               <span className="text-xs text-yellow-500">No rooms available</span>
             )}
           </div>
-          
+
           {rooms.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {rooms.map(room => (
@@ -189,7 +189,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             </div>
           )}
         </div>
-        
+
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2 border-t border-white/10">
           <motion.button
@@ -199,7 +199,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           >
             Cancel
           </motion.button>
-          
+
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleSubmit}
