@@ -13,7 +13,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 import Modal from '@/components/ui/modal';
-import jsonDB from '@/lib/database';
+import * as jsonDB from '@/lib/database';
 
 const deviceTypes = [
   { icon: Lightbulb, name: 'Light', category: 'lighting' },
