@@ -28,29 +28,40 @@ class SimpleJsonDB {
       // Create stores for different data types
       const storeNames = ['devices', 'rooms', 'scenes', 'automations', 'settings', 'history'];
       
+      // Create store instances
       for (const store of storeNames) {
         this.stores[store] = localforage.createInstance({
           name: 'smartHavenDB',
-          storeName: store
+          storeName: store,
+          description: `SmartHaven ${store} store`
         });
       }
       
-      // Check if we need to initialize the store with default data
-      for (const store of storeNames) {
-        const count = await this.getItemCount(store);
-        if (count === 0) {
-          // Only initialize devices and rooms with sample data
-          if (store === 'devices' || store === 'rooms') {
-            await this.initializeStoreData(store);
+      // Check each store and initialize with sample data if needed
+      const initPromises = storeNames.map(async (store) => {
+        try {
+          // Initialize only devices and rooms with sample data if empty
+          if ((store === 'devices' || store === 'rooms')) {
+            const count = await this.getItemCount(store);
+            if (count === 0) {
+              await this.initializeStoreData(store);
+            }
           }
+        } catch (err) {
+          console.warn(`Could not initialize ${store} store:`, err);
         }
-      }
+      });
+      
+      // Wait for all initialization to complete
+      await Promise.all(initPromises);
       
       this.initialized = true;
       console.log('✅ JSON Database initialized successfully');
       return true;
     } catch (error) {
       console.error('❌ Failed to initialize database:', error);
+      // Still mark as initialized to prevent repeated attempts
+      this.initialized = true;
       return false;
     }
   }
@@ -209,14 +220,26 @@ class SimpleJsonDB {
   async setItem(storeName, id, data) {
     try {
       if (!this.stores[storeName]) {
-        throw new Error(`Store "${storeName}" does not exist`);
+        console.error(`Store "${storeName}" does not exist, creating it now`);
+        this.stores[storeName] = localforage.createInstance({
+          name: 'smartHavenDB',
+          storeName: storeName
+        });
       }
       
+      const strId = String(id); // Ensure ID is a string
+      
+      // Add timestamp if not present
+      const dataWithTimestamp = {
+        ...data,
+        updatedAt: data.updatedAt || Date.now()
+      };
+      
       // Save the data with the ID
-      return await this.stores[storeName].setItem(id, data);
+      return await this.stores[storeName].setItem(strId, dataWithTimestamp);
     } catch (error) {
       console.error(`❌ Error saving to ${storeName}:`, error);
-      throw error;
+      return null; // Return null instead of throwing
     }
   }
   
@@ -229,10 +252,15 @@ class SimpleJsonDB {
   async getItem(storeName, id) {
     try {
       if (!this.stores[storeName]) {
-        throw new Error(`Store "${storeName}" does not exist`);
+        console.warn(`Store "${storeName}" does not exist, creating it now`);
+        this.stores[storeName] = localforage.createInstance({
+          name: 'smartHavenDB',
+          storeName: storeName
+        });
       }
       
-      return await this.stores[storeName].getItem(id);
+      const strId = String(id); // Ensure ID is a string
+      return await this.stores[storeName].getItem(strId);
     } catch (error) {
       console.error(`❌ Error getting item from ${storeName}:`, error);
       return null;
@@ -247,12 +275,21 @@ class SimpleJsonDB {
   async getAllItems(storeName) {
     try {
       if (!this.stores[storeName]) {
-        throw new Error(`Store "${storeName}" does not exist`);
+        console.warn(`Store "${storeName}" does not exist, creating it now`);
+        this.stores[storeName] = localforage.createInstance({
+          name: 'smartHavenDB',
+          storeName: storeName
+        });
+        
+        // If this is a new store, we might need to initialize it with sample data
+        if (storeName === 'rooms' || storeName === 'devices') {
+          await this.initializeStoreData(storeName);
+        }
       }
       
       const items = [];
       await this.stores[storeName].iterate((value) => {
-        items.push(value);
+        if (value) items.push(value);
       });
       
       return items;

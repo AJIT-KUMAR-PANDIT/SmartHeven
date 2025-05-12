@@ -33,7 +33,12 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpe
     { path: '/settings', icon: Settings, label: 'Settings' }
   ];
 
-  // Mobile menu is controlled from parent component
+  // Handle mobile menu toggle
+  const toggleMobileMenu = () => {
+    if (setIsMobileOpen) {
+      setIsMobileOpen(!isMobileOpen);
+    }
+  };
 
   return (
     <>

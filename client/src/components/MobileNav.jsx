@@ -130,10 +130,14 @@ const MobileNav = ({ onMenuClick }) => {
             return (
               <motion.div 
                 key={`action-${index}`}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center cursor-pointer"
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={item.action}
+                onClick={() => {
+                  if (item.action && typeof item.action === 'function') {
+                    item.action();
+                  }
+                }}
               >
                 <motion.div 
                   className="p-2 rounded-full"
