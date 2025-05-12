@@ -11,6 +11,7 @@ import Devices from "@/pages/Devices.jsx";
 import Scenes from "@/pages/Scenes.jsx";
 import Automations from "@/pages/Automations.jsx";
 import Analytics from "@/pages/Analytics.jsx";
+import Settings from "@/pages/Settings.jsx";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/scenes" component={Scenes} />
       <Route path="/automations" component={Automations} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );

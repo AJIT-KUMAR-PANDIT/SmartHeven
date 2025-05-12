@@ -7,7 +7,8 @@ import {
   Zap, 
   Clock, 
   LineChart, 
-  Mic
+  Mic,
+  Settings
 } from 'lucide-react';
 
 const MobileNav = () => {
@@ -72,7 +73,30 @@ const MobileNav = () => {
         </motion.div>
       )}
       
-      {/* Bottom Navigation */}
+      {/* Floating Mic Button for Desktop */}
+      <motion.button
+        className="fixed z-40 bottom-8 right-8 hidden md:flex w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary items-center justify-center shadow-xl"
+        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.1, boxShadow: "0px 5px 25px rgba(0, 0, 0, 0.4)" }}
+        onClick={handleMicClick}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <div className="relative">
+          <Mic className="text-white" size={28} />
+          
+          {/* Animated ripple effect */}
+          <motion.div
+            className="absolute -inset-3 rounded-full border-2 border-white/30"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: [0, 0.5, 0], scale: [0.8, 1.2, 1.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
+      </motion.button>
+      
+      {/* Bottom Navigation for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 bg-black/70 backdrop-blur-lg border-t border-white/10 flex justify-around items-center h-20 z-40 px-4 md:hidden">
         {navItems.map((item, index) => {
           // Center position is for the mic button
@@ -133,6 +157,36 @@ const MobileNav = () => {
             </Link>
           );
         })}
+        
+        {/* Added Settings to mobile nav */}
+        <Link href="/settings">
+          <motion.div 
+            className="flex flex-col items-center"
+            whileHover={{ y: -3 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <motion.div 
+              className={`p-2 rounded-full ${location === '/settings' ? 'bg-white/10' : ''}`}
+              initial={false}
+              animate={location === '/settings' ? { 
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                scale: 1.1
+              } : { 
+                backgroundColor: "rgba(255, 255, 255, 0)",
+                scale: 1
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <Settings 
+                size={24} 
+                className={location === '/settings' ? 'text-primary' : 'text-white/70'} 
+              />
+            </motion.div>
+            <span className={`text-xs mt-1 ${location === '/settings' ? 'text-white' : 'text-white/70'}`}>
+              Settings
+            </span>
+          </motion.div>
+        </Link>
       </nav>
     </>
   );
