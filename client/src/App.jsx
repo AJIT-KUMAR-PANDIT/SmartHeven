@@ -9,7 +9,7 @@ import MobileNav from '@/components/MobileNav';
 import Sidebar from '@/components/Sidebar';
 import TopNav from '@/components/TopNav';
 import { useState, useEffect } from 'react';
-import * as jsonDB from '@/lib/database';
+import { initDatabase, getAllItems } from '@/lib/database';
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,9 +21,9 @@ function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        await initDatabase();
-        const loadedRooms = await getAllItems('rooms');
-        const loadedDevices = await getAllItems('devices');
+        const db = await initDatabase();
+        const loadedRooms = await db.rooms.find().exec().then(res => res.map(d => d.toJSON()));
+        const loadedDevices = await db.devices.find().exec().then(res => res.map(d => d.toJSON()));
         setRooms(loadedRooms);
         setDevices(loadedDevices);
         if (loadedRooms.length > 0) {
