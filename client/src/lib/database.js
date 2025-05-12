@@ -1,3 +1,6 @@
+
+import { Pool } from 'pg';
+
 // Database operations
 export async function initDatabase() {
   try {
