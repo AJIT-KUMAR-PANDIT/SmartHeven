@@ -17,6 +17,7 @@ const deviceSchema = {
   type: "object",
   primaryKey: "id",
   properties: {
+    additionalProperties: false,
     id: { type: "string", maxLength: 100 },
     name: { type: "string" },
     type: { type: "string" },
@@ -39,13 +40,14 @@ const roomSchema = {
   type: "object",
   primaryKey: "id",
   properties: {
+    additionalProperties: false,
     id: { type: "string", maxLength: 100 },
     name: { type: "string" },
     type: { type: "string" },
     floor: { type: ["number", "null"] },
     icon: { type: ["string", "null"] },
     devices: {
-      type: ["array", "null"],
+      type: "array",
       items: { type: "string" },
       default: [],
     },
@@ -60,12 +62,27 @@ const sceneSchema = {
   type: "object",
   primaryKey: "id",
   properties: {
+    additionalProperties: false,
     id: { type: "string", maxLength: 100 },
     name: { type: "string" },
     icon: { type: ["string", "null"] },
     actions: {
-      type: ["array", "null"],
-      items: { type: "object" },
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          deviceId: { type: "string" },
+          changes: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              status: { type: "string", enum: ["on", "off", "toggle"] },
+            },
+            required: ["status"],
+          },
+        },
+        required: ["deviceId", "changes"],
+      },
       default: [],
     },
     isActive: { type: ["boolean", "null"] },
@@ -81,12 +98,27 @@ const automationSchema = {
   type: "object",
   primaryKey: "id",
   properties: {
+    additionalProperties: false,
     id: { type: "string", maxLength: 100 },
     name: { type: "string" },
     trigger: { type: ["object", "null"], default: null },
     actions: {
-      type: ["array", "null"],
-      items: { type: "object" },
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          deviceId: { type: "string" },
+          changes: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              status: { type: "string", enum: ["on", "off", "toggle"] },
+            },
+            required: ["status"],
+          },
+        },
+        required: ["deviceId", "changes"],
+      },
       default: [],
     },
     isEnabled: { type: ["boolean", "null"] },
@@ -102,6 +134,7 @@ const historySchema = {
   type: "object",
   primaryKey: "id",
   properties: {
+    additionalProperties: false,
     id: { type: "string", maxLength: 100 },
     deviceId: { type: "string" },
     event: { type: "string" },
@@ -119,6 +152,7 @@ const settingsSchema = {
   type: "object",
   primaryKey: "key",
   properties: {
+    additionalProperties: false,
     key: { type: "string", maxLength: 100 },
     value: { type: ["object", "null"], default: null },
     updatedAt: { type: ["number", "null"] },
@@ -195,4 +229,17 @@ export const toggleDevice = async (deviceId) => {
   const updatedDevice = { ...device, status: newStatus };
   await db.devices.upsert(updatedDevice);
   return updatedDevice;
+};
+
+export const resetDatabase = async () => {
+  const db = await getDb();
+  await Promise.all([
+    db.devices.remove(),
+    db.rooms.remove(),
+    db.scenes.remove(),
+    db.automations.remove(),
+    db.history.remove(),
+    db.settings.remove(),
+  ]);
+  window.location.reload();
 };

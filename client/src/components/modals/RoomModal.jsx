@@ -61,13 +61,13 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         id: editRoom?.id || jsonDB.generateId(),
         name: roomName.trim(),
         type: selectedType.type,
-        icon: selectedType.icon,
+        icon: selectedType.type,
         floor: parseInt(floor),
         devices: editRoom?.devices || []
       };
 
       // Save to database
-      await jsonDB.init();
+      await jsonDB.initDatabase();
       await jsonDB.save('rooms', roomData.id, roomData);
 
       setIsLoading(false);
