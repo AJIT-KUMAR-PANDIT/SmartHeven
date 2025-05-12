@@ -50,7 +50,7 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpe
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      <aside className={`glass fixed inset-0 w-full md:w-72 lg:w-80 md:relative md:min-h-screen z-20 transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col overflow-hidden`}>
+      <aside className={`glass fixed inset-y-0 left-0 w-full md:w-72 lg:w-80 md:relative md:min-h-screen z-30 transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col overflow-hidden`}>
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-white/5">
           <div className="flex items-center">
@@ -64,6 +64,7 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpe
             <button 
               className="ml-auto p-2 rounded-lg bg-black/30 text-white md:hidden"
               onClick={toggleMobileMenu}
+              aria-label="Close sidebar"
             >
               <X size={20} />
             </button>
@@ -180,9 +181,13 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpe
       
       {/* Overlay for mobile */}
       {isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-10 md:hidden"
-          onClick={() => setIsMobileOpen(false)}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-20 md:hidden"
+          onClick={toggleMobileMenu}
         />
       )}
       

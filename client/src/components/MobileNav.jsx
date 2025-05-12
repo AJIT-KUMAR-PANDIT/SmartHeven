@@ -20,7 +20,12 @@ const MobileNav = ({ onMenuClick }) => {
     { icon: Smartphone, label: 'Devices', path: '/devices' },
     { icon: null, label: '', path: '' }, // Placeholder for mic button
     { icon: Zap, label: 'Scenes', path: '/scenes' },
-    { icon: Menu, label: 'Menu', path: '', action: onMenuClick }
+    { icon: Menu, label: 'Menu', path: '', action: () => {
+      console.log("Menu button clicked");
+      if (typeof onMenuClick === 'function') {
+        onMenuClick();
+      }
+    }}
   ];
   
   const [isMicActive, setIsMicActive] = useState(false);

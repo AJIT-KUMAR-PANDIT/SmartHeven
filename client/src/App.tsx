@@ -68,6 +68,7 @@ function App() {
   }, []);
 
   const toggleSidebar = () => {
+    console.log("Toggling sidebar, current state:", isSidebarOpen);
     setIsSidebarOpen(!isSidebarOpen);
   };
 
@@ -78,8 +79,8 @@ function App() {
           {/* Top Navigation */}
           <TopNav />
           
-          <div className="flex pt-16"> {/* Add padding top for the TopNav */}
-            {/* Sidebar */}
+          <div className="flex flex-col md:flex-row pt-16"> {/* Add padding top for the TopNav */}
+            {/* Sidebar - for desktop view */}
             <Sidebar 
               activeRoom={activeRoom}
               onRoomChange={setActiveRoom}
@@ -89,7 +90,7 @@ function App() {
             />
             
             {/* Main Content */}
-            <main className="flex-1">
+            <main className="flex-1 overflow-y-auto">
               <Router />
             </main>
           </div>
