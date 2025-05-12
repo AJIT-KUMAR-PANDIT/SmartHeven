@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/ui/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { queryClient } from '@/lib/queryClient';
-import Router from '@/Router';
+import Router from './Router';
 import MobileNav from '@/components/MobileNav';
 import Sidebar from '@/components/Sidebar';
 import TopNav from '@/components/TopNav';
