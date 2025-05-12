@@ -17,10 +17,12 @@ import {
   Monitor,
   Plus
 } from 'lucide-react';
+import RoomModal from '@/components/modals/RoomModal';
 
 const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
   const [location] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const navItems = [
@@ -100,7 +102,10 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs uppercase tracking-wider opacity-50 px-2">Rooms</h3>
-              <button className="text-xs text-primary hover:underline flex items-center">
+              <button 
+                onClick={() => setIsRoomModalOpen(true)}
+                className="text-xs text-primary hover:underline flex items-center"
+              >
                 <Plus size={12} className="mr-1" /> Add Room
               </button>
             </div>
@@ -178,6 +183,12 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
           onClick={() => setIsMobileOpen(false)}
         />
       )}
+      
+      {/* Room Modal */}
+      <RoomModal 
+        isOpen={isRoomModalOpen} 
+        onClose={() => setIsRoomModalOpen(false)} 
+      />
     </>
   );
 };
