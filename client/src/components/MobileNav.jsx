@@ -21,10 +21,7 @@ const MobileNav = ({ onMenuClick }) => {
     { icon: null, label: '', path: '' }, // Placeholder for mic button
     { icon: Zap, label: 'Scenes', path: '/scenes' },
     { icon: Menu, label: 'Menu', path: '', action: () => {
-      console.log("Menu button clicked");
-      if (typeof onMenuClick === 'function') {
-        onMenuClick();
-      }
+      onMenuClick?.();
     }}
   ];
   

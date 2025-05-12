@@ -50,7 +50,7 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpe
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      <aside className={`glass fixed inset-y-0 left-0 w-full md:w-72 lg:w-80 md:relative md:min-h-screen z-30 transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col overflow-hidden`}>
+      <aside className={`glass fixed inset-y-0 left-0 w-full md:w-72 lg:w-80 z-30 transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col overflow-hidden bg-background/95 backdrop-blur-lg border-r border-border/40`}>
         {/* Header */}
         <div className="flex-shrink-0 p-4 border-b border-white/5">
           <div className="flex items-center">

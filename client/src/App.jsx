@@ -1,41 +1,35 @@
-import { ThemeProvider } from "@/components/ui/theme-provider.jsx";
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient.js";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import MobileNav from "@/components/MobileNav";
-import NotFound from "@/pages/not-found.jsx";
-import Dashboard from "@/pages/Dashboard.jsx";
-import Devices from "@/pages/Devices.jsx";
-import Scenes from "@/pages/Scenes.jsx";
-import Automations from "@/pages/Automations.jsx";
-import Analytics from "@/pages/Analytics.jsx";
-import Settings from "@/pages/Settings.jsx";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/devices" component={Devices} />
-      <Route path="/scenes" component={Scenes} />
-      <Route path="/automations" component={Automations} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/settings" component={Settings} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/components/ui/theme-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+import { queryClient } from '@/lib/queryClient';
+import Router from '@/Router';
+import MobileNav from '@/components/MobileNav';
+import Sidebar from '@/components/Sidebar';
+import TopNav from '@/components/TopNav';
+import { useState } from 'react';
 
 function App() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
         <TooltipProvider>
           <Toaster />
-          <div className="bg-background min-h-screen">
-            <Router />
-            <MobileNav />
+          <div className="flex h-screen bg-background">
+            <Sidebar 
+              isMobileOpen={isMobileMenuOpen} 
+              setIsMobileOpen={setIsMobileMenuOpen} 
+            />
+            <div className="flex-1 flex flex-col min-h-screen">
+              <TopNav />
+              <main className="flex-1 overflow-y-auto pt-16 pb-20 md:pb-0">
+                <Router />
+              </main>
+              <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
+            </div>
           </div>
         </TooltipProvider>
       </ThemeProvider>

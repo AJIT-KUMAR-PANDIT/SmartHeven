@@ -27,7 +27,7 @@ const TopNav = () => {
 
   return (
     <motion.header 
-      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 h-16 bg-black/60 backdrop-blur-lg z-30 border-b border-white/10"
+      className="fixed top-0 left-0 right-0 md:left-[18rem] lg:left-[20rem] flex items-center justify-between px-4 h-16 bg-black/60 backdrop-blur-lg z-20 border-b border-white/10"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
