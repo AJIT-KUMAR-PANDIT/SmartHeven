@@ -15,7 +15,7 @@ import {
   MoreVertical
 } from 'lucide-react';
 import DeviceModal from '@/components/modals/DeviceModal';
-import jsonDB from '@/lib/database';
+import * as jsonDB from '@/lib/database';
 
 // Device type to icon mapping
 const deviceIcons = {
