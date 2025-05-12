@@ -66,6 +66,46 @@ const MainContent = ({ activeRoom, devices, activeDevices, toggleDevice, roomDat
   };
 
   return (
+    <div className="p-4">
+      <AnimatePresence>
+        {showGreeting && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6 glass p-4 rounded-xl"
+          >
+            <h2 className="text-2xl font-bold">{getGreeting()}</h2>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
+        {filteredDevices.map((device) => (
+          <motion.div key={device.id} variants={itemVariants}>
+            <DeviceCard
+              device={device}
+              onToggle={() => toggleDevice(device.id)}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
+
+      <EnergyMonitoring
+        timeframe={energyTimeframe}
+        onTimeframeChange={setEnergyTimeframe}
+      />
+
+      <RoomOverview roomData={roomData} />
+    </div>
+  );
+
+  return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background pb-28 md:pb-6">
       {/* Welcome Greeting Overlay - Appears briefly on load */}
       <AnimatePresence>

@@ -81,9 +81,24 @@ const Devices = () => {
         setDevices(devices.map(device => 
           device.id === deviceId ? updatedDevice : device
         ));
+        
+        // Show success toast
+        toast({
+          title: "Device Updated",
+          description: `Device ${updatedDevice.name} has been ${updatedDevice.status === 'on' ? 'turned on' : 'turned off'}.`,
+          duration: 2000,
+        });
       }
     } catch (error) {
       console.error('Failed to toggle device:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "Failed to update device. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
   

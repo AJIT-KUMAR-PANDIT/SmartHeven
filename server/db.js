@@ -2,9 +2,17 @@ import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
-// Initialize PostgreSQL connection pool
+// Initialize PostgreSQL connection pool with error handling
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
 });
 
 // Execute a query with error handling
