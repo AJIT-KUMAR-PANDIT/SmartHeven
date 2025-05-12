@@ -13,7 +13,7 @@ const Dashboard = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        
+
         // Get rooms
         const roomsData = await jsonDB.getAllItems('rooms');
         if (roomsData.length > 0) {
@@ -23,24 +23,24 @@ const Dashboard = () => {
             setActiveRoom(roomsData[0].id);
           }
         }
-        
+
         // Get devices
         const devicesData = await jsonDB.getAllItems('devices');
         setDevices(devicesData);
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error('Error loading data:', error);
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, [activeRoom]);
 
   // Get devices for the active room
   const filteredDevices = devices.filter(device => device.room === activeRoom);
-  
+
   // Get active room data
   const activeRoomData = rooms.find(room => room.id === activeRoom);
 
@@ -50,13 +50,13 @@ const Dashboard = () => {
       // Get the device
       const device = await jsonDB.getItem('devices', deviceId);
       if (!device) return;
-      
+
       // Toggle the status
       const newStatus = device.status === 'on' ? 'off' : 'on';
-      
+
       // Update the device in the database
       await jsonDB.updateDeviceStatus(deviceId, { status: newStatus });
-      
+
       // Update the UI
       setDevices(prev => 
         prev.map(d => 

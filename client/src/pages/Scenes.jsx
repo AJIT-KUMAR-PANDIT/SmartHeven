@@ -10,7 +10,7 @@ import {
   CloudLightning
 } from 'lucide-react';
 import SceneModal from '@/components/modals/SceneModal';
-import jsonDB from '@/lib/database';
+import * as jsonDB from '@/lib/database';
 
 const Scenes = () => {
   const [scenes, setScenes] = useState([]);

@@ -9,7 +9,7 @@ import MobileNav from '@/components/MobileNav';
 import Sidebar from '@/components/Sidebar';
 import TopNav from '@/components/TopNav';
 import { useState, useEffect } from 'react';
-import { getAllItems, initDatabase } from '@/lib/database';
+import * as jsonDB from '@/lib/database';
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
