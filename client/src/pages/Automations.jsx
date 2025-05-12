@@ -140,36 +140,11 @@ const Automations = () => {
     5: false
   });
   
-  const toggleAutomation = async (automationId) => {
-    try {
-      const newState = !enabledAutomations[automationId];
-      
-      await jsonDB.init();
-      await jsonDB.saveItem('automations', {
-        id: automationId,
-        isEnabled: newState,
-        lastUpdated: Date.now()
-      });
-      
-      setEnabledAutomations(prev => ({
-        ...prev,
-        [automationId]: newState
-      }));
-      
-      toast({
-        title: `Automation ${newState ? 'Enabled' : 'Disabled'}`,
-        description: `Successfully ${newState ? 'enabled' : 'disabled'} the automation.`,
-        duration: 2000,
-      });
-    } catch (error) {
-      console.error('Failed to toggle automation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update automation. Please try again.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
+  const toggleAutomation = (automationId) => {
+    setEnabledAutomations(prev => ({
+      ...prev,
+      [automationId]: !prev[automationId]
+    }));
   };
   
   return (
