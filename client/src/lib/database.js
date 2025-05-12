@@ -1,10 +1,13 @@
 
 import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
+import { v4 as uuidv4 } from 'uuid';
 
 const DB_NAME = 'smarthome.db';
 const sqlite = new SQLiteConnection(CapacitorSQLite);
 let _db = null;
+
+export const generateId = () => uuidv4();
 
 const initWebStore = async () => {
   const platform = Capacitor.getPlatform();
@@ -28,7 +31,7 @@ const getDb = async () => {
   return _db;
 };
 
-export async function initDatabase() {
+export const init = async () => {
   try {
     const db = await getDb();
     await db.open();
@@ -81,14 +84,13 @@ export async function initDatabase() {
     console.error('Database initialization error:', err);
     return false;
   }
-}
+};
 
-export async function getAllItems(tableName) {
+export const getAllItems = async (tableName) => {
   try {
     const db = await getDb();
     const result = await db.query(`SELECT * FROM ${tableName}`);
     return result.values.map(item => {
-      // Parse JSON fields
       ['settings', 'devices', 'actions', 'trigger'].forEach(field => {
         if (item[field]) {
           try {
@@ -96,7 +98,6 @@ export async function getAllItems(tableName) {
           } catch (e) {}
         }
       });
-      // Convert boolean fields
       ['connected', 'isActive', 'isEnabled'].forEach(field => {
         if (item[field] !== undefined) {
           item[field] = Boolean(item[field]);
@@ -108,27 +109,33 @@ export async function getAllItems(tableName) {
     console.error(`Error fetching ${tableName}:`, err);
     return [];
   }
-}
+};
 
-export async function getItem(tableName, id) {
+export const getItem = async (tableName, id) => {
   try {
     const db = await getDb();
     const result = await db.query(
       `SELECT * FROM ${tableName} WHERE id = ?`,
       [id]
     );
-    return result.values[0];
+    const item = result.values[0];
+    if (item) {
+      ['settings', 'devices', 'actions', 'trigger'].forEach(field => {
+        if (item[field]) {
+          try {
+            item[field] = JSON.parse(item[field]);
+          } catch (e) {}
+        }
+      });
+    }
+    return item;
   } catch (err) {
     console.error(`Error fetching ${tableName} item:`, err);
     return null;
   }
-}
+};
 
-export async function saveItem(tableName, item) {
-  if (!requireAuth(['admin', 'user'])) {
-    throw new Error('Permission denied');
-  }
-  
+export const saveItem = async (tableName, item) => {
   if (!item || !item.id) {
     throw new Error('Invalid item data - ID is required');
   }
@@ -151,20 +158,19 @@ export async function saveItem(tableName, item) {
     const updateFields = fields.map(field => `${field} = ?`).join(', ');
     
     const query = `
-      INSERT INTO ${tableName} (${fields.join(', ')})
+      INSERT OR REPLACE INTO ${tableName} (${fields.join(', ')})
       VALUES (${placeholders})
-      ON CONFLICT(id) DO UPDATE SET ${updateFields}
     `;
     
-    await db.run(query, [...values, ...values]);
+    await db.run(query, values);
     return item;
   } catch (err) {
     console.error(`Error saving ${tableName} item:`, err);
     throw err;
   }
-}
+};
 
-export async function deleteItem(tableName, id) {
+export const deleteItem = async (tableName, id) => {
   try {
     const db = await getDb();
     await db.run(`DELETE FROM ${tableName} WHERE id = ?`, [id]);
@@ -173,4 +179,19 @@ export async function deleteItem(tableName, id) {
     console.error(`Error deleting ${tableName} item:`, err);
     return false;
   }
-}
+};
+
+export const toggleDevice = async (deviceId) => {
+  try {
+    const device = await getItem('devices', deviceId);
+    if (!device) return null;
+    
+    const newStatus = device.status === 'on' ? 'off' : 'on';
+    const updatedDevice = { ...device, status: newStatus };
+    await saveItem('devices', updatedDevice);
+    return updatedDevice;
+  } catch (err) {
+    console.error('Error toggling device:', err);
+    throw err;
+  }
+};
