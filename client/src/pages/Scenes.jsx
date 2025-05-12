@@ -1,172 +1,249 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Moon, Sun, Utensils, Tv, Music, Bed } from 'lucide-react';
-
-const SceneCard = ({ scene, isActive, onToggle }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className={`glass rounded-xl p-5 neumorphic device-card ${isActive ? 'active' : ''}`}
-      onClick={onToggle}
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-${scene.colorClass}`} style={{ backgroundColor: `${scene.color}20` }}>
-          <scene.icon size={24} />
-        </div>
-        <div className="relative inline-flex">
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={isActive}
-            readOnly
-          />
-          <div
-            className={`block w-14 h-8 rounded-full ${isActive ? 'bg-primary' : 'bg-white/10'} transition-colors duration-200`}
-          ></div>
-          <div
-            className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-200 transform ${
-              isActive ? 'translate-x-6' : 'translate-x-0'
-            }`}
-          ></div>
-        </div>
-      </div>
-      <h3 className="text-lg font-medium">{scene.name}</h3>
-      <p className="text-sm text-foreground/60">{scene.deviceCount} devices</p>
-      
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <p className="text-xs text-foreground/60 mb-2">Included devices:</p>
-        <div className="flex flex-wrap gap-1">
-          {scene.devices.map((device, idx) => (
-            <span 
-              key={idx} 
-              className="inline-block px-2 py-1 text-xs bg-white/5 rounded-md"
-            >
-              {device}
-            </span>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+import { 
+  Plus, 
+  Zap, 
+  Play, 
+  MoreVertical, 
+  Edit, 
+  Trash, 
+  CloudLightning
+} from 'lucide-react';
+import SceneModal from '@/components/modals/SceneModal';
+import jsonDB from '@/lib/database';
 
 const Scenes = () => {
-  // Sample scene data - in a real app, this would come from an API
-  const scenesData = [
-    {
-      id: 1,
-      name: 'Movie Night',
-      deviceCount: 5,
-      icon: Tv,
-      colorClass: 'primary',
-      color: '#0B84FF',
-      devices: ['Living Room TV', 'Living Room Lights', 'Sound Bar']
-    },
-    {
-      id: 2,
-      name: 'Good Morning',
-      deviceCount: 6,
-      icon: Sun,
-      colorClass: 'warning',
-      color: '#FFCC00',
-      devices: ['Bedroom Blinds', 'Kitchen Lights', 'Coffee Maker']
-    },
-    {
-      id: 3,
-      name: 'Good Night',
-      deviceCount: 8,
-      icon: Moon,
-      colorClass: 'secondary',
-      color: '#6D00F8',
-      devices: ['All Lights', 'Lock Doors', 'Set Thermostat']
-    },
-    {
-      id: 4,
-      name: 'Dinner Time',
-      deviceCount: 4,
-      icon: Utensils,
-      colorClass: 'accent',
-      color: '#FF5733',
-      devices: ['Dining Lights', 'Kitchen Appliances']
-    },
-    {
-      id: 5,
-      name: 'Party Mode',
-      deviceCount: 7,
-      icon: Music,
-      colorClass: 'primary',
-      color: '#0B84FF',
-      devices: ['All Speakers', 'Living Room Lights', 'Kitchen Lights']
-    },
-    {
-      id: 6,
-      name: 'Sleeping',
-      deviceCount: 5,
-      icon: Bed,
-      colorClass: 'secondary',
-      color: '#6D00F8',
-      devices: ['Bedroom Lights', 'AC', 'Bedroom Speaker']
+  const [scenes, setScenes] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingScene, setEditingScene] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load scenes from database
+  useEffect(() => {
+    const loadScenes = async () => {
+      try {
+        await jsonDB.init();
+        const scenesData = await jsonDB.getAllItems('scenes');
+        setScenes(scenesData || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load scenes:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    loadScenes();
+  }, []);
+  
+  // Open modal for editing a scene
+  const handleEditScene = (scene) => {
+    setEditingScene(scene);
+    setIsModalOpen(true);
+  };
+  
+  // Open modal for creating a new scene
+  const handleAddScene = () => {
+    setEditingScene(null);
+    setIsModalOpen(true);
+  };
+  
+  // Activate a scene
+  const handleActivateScene = async (sceneId) => {
+    try {
+      await jsonDB.init();
+      await jsonDB.activateScene(sceneId);
+      
+      // Update scene in the UI
+      setScenes(scenes.map(scene => {
+        if (scene.id === sceneId) {
+          return { ...scene, isActive: true, lastTriggered: Date.now() };
+        }
+        return scene;
+      }));
+    } catch (error) {
+      console.error('Failed to activate scene:', error);
     }
-  ];
+  };
   
-  const [activeScenes, setActiveScenes] = useState({
-    1: true,
-    2: false,
-    3: false,
-    4: false,
-    5: false,
-    6: false
-  });
+  // Delete a scene
+  const handleDeleteScene = async (sceneId) => {
+    if (window.confirm('Are you sure you want to delete this scene?')) {
+      try {
+        await jsonDB.init();
+        await jsonDB.removeItem('scenes', sceneId);
+        setScenes(scenes.filter(scene => scene.id !== sceneId));
+      } catch (error) {
+        console.error('Failed to delete scene:', error);
+      }
+    }
+  };
   
-  const toggleScene = (sceneId) => {
-    setActiveScenes(prev => ({
-      ...prev,
-      [sceneId]: !prev[sceneId]
-    }));
+  // Handle modal close and refresh scenes
+  const handleModalClose = async () => {
+    setIsModalOpen(false);
+    
+    // Refresh scenes list
+    try {
+      await jsonDB.init();
+      const scenesData = await jsonDB.getAllItems('scenes');
+      setScenes(scenesData || []);
+    } catch (error) {
+      console.error('Failed to refresh scenes:', error);
+    }
   };
   
   return (
-    <div className="min-h-screen pb-24 bg-background">
-      <div className="p-4 md:p-6">
-        <header className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <motion.h1 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-2xl md:text-3xl font-display font-bold"
-              >
-                Scenes
-              </motion.h1>
-              <p className="text-sm text-foreground/60">Create and manage automated scenes</p>
-            </div>
-            
-            <motion.button
+    <div className="min-h-screen p-4 md:p-6 bg-background">
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <motion.h1 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl md:text-3xl font-display font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-gradient"
+          >
+            Scenes
+          </motion.h1>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 bg-primary rounded-lg text-white flex items-center shadow-lg"
+            onClick={handleAddScene}
+          >
+            <Plus size={18} className="mr-2" />
+            Add Scene
+          </motion.button>
+        </div>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.7 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-sm text-foreground/60 mt-1"
+        >
+          Create and manage automated sequences for your smart home
+        </motion.p>
+      </header>
+      
+      {/* Scenes Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {isLoading ? (
+          // Loading skeletons
+          [...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="glass rounded-xl p-4 h-44 animate-pulse"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+            >
+              <div className="w-10 h-10 rounded-lg bg-white/10 mb-3"></div>
+              <div className="w-2/3 h-4 rounded-md bg-white/10 mb-2"></div>
+              <div className="w-1/2 h-3 rounded-md bg-white/5 mb-6"></div>
+              <div className="w-full h-12 rounded-lg bg-white/5"></div>
+            </motion.div>
+          ))
+        ) : scenes.length === 0 ? (
+          // Empty state
+          <motion.div 
+            className="col-span-full flex flex-col items-center justify-center glass rounded-xl p-10 border border-dashed border-white/10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CloudLightning size={40} className="text-primary/40 mb-4" />
+            <h3 className="text-lg font-medium mb-2">No scenes yet</h3>
+            <p className="text-sm text-foreground/60 text-center mb-6 max-w-md">
+              Scenes let you control multiple devices with a single tap. Create your first scene to get started.
+            </p>
+            <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="glass neumorphic px-4 py-2 rounded-xl flex items-center text-sm hover:bg-white/10 transition"
+              className="px-4 py-2 bg-primary rounded-lg text-white flex items-center"
+              onClick={handleAddScene}
             >
-              <Plus className="mr-2" size={18} />
-              Create Scene
+              <Plus size={18} className="mr-2" />
+              Create First Scene
             </motion.button>
-          </div>
-        </header>
-        
-        {/* Scenes Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {scenesData.map((scene) => (
-            <SceneCard
+          </motion.div>
+        ) : (
+          // Scene cards
+          scenes.map((scene, index) => (
+            <motion.div
               key={scene.id}
-              scene={scene}
-              isActive={activeScenes[scene.id]}
-              onToggle={() => toggleScene(scene.id)}
-            />
-          ))}
-        </div>
+              className="glass rounded-xl p-4 border border-white/5 hover:border-primary/20 transition-colors"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              layoutId={`scene-${scene.id}`}
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary">
+                    <Zap size={20} />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-medium">{scene.name}</h3>
+                    <p className="text-xs text-foreground/60">
+                      {scene.actions?.length || 0} device{scene.actions?.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <button className="p-2 rounded-lg hover:bg-white/10">
+                    <MoreVertical size={16} />
+                  </button>
+                  
+                  {/* Dropdown menu */}
+                  <div className="absolute right-0 top-full mt-1 w-36 glass rounded-lg border border-white/10 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                    <button 
+                      className="w-full flex items-center px-3 py-2 hover:bg-white/10 rounded-t-lg"
+                      onClick={() => handleEditScene(scene)}
+                    >
+                      <Edit size={14} className="mr-2 opacity-70" />
+                      <span className="text-sm">Edit</span>
+                    </button>
+                    <button 
+                      className="w-full flex items-center px-3 py-2 hover:bg-white/10 text-rose-400 rounded-b-lg"
+                      onClick={() => handleDeleteScene(scene.id)}
+                    >
+                      <Trash size={14} className="mr-2 opacity-70" />
+                      <span className="text-sm">Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Scene status */}
+              {scene.lastTriggered && (
+                <div className="glass rounded-lg py-1 px-2 text-xs flex items-center mb-3 w-max">
+                  <div className={`w-2 h-2 rounded-full ${scene.isActive ? 'bg-green-500' : 'bg-white/30'} mr-2`}></div>
+                  {scene.isActive ? 'Active' : 'Last run'}: {new Date(scene.lastTriggered).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
+              
+              {/* Play button */}
+              <motion.button 
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full mt-2 px-4 py-3 rounded-xl bg-gradient-to-r from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 border border-primary/20 flex items-center justify-center transition-colors"
+                onClick={() => handleActivateScene(scene.id)}
+              >
+                <Play size={16} className="mr-2 text-primary" />
+                <span className="text-sm font-medium">Run Scene</span>
+              </motion.button>
+            </motion.div>
+          ))
+        )}
       </div>
+      
+      {/* Scene Modal */}
+      <SceneModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        editScene={editingScene}
+      />
     </div>
   );
 };

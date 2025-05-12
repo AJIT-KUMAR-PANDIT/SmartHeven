@@ -1,8 +1,8 @@
 import localforage from 'localforage';
 
 /**
- * SimpleJsonDB - A lightweight JSON-like database for IoT applications
- * Works with both web and Capacitor mobile apps
+ * SimpleJsonDB - A lightweight client-side database for IoT applications
+ * Works with both web and Capacitor mobile apps using localforage for storage
  */
 class SimpleJsonDB {
   constructor() {
@@ -33,8 +33,10 @@ class SimpleJsonDB {
           name: 'smartHavenDB',
           storeName: store
         });
-        
-        // Check if we need to initialize the store with default data
+      }
+      
+      // Check if we need to initialize the store with default data
+      for (const store of storeNames) {
         const count = await this.getItemCount(store);
         if (count === 0) {
           // Only initialize devices and rooms with sample data
@@ -49,6 +51,95 @@ class SimpleJsonDB {
       return true;
     } catch (error) {
       console.error('❌ Failed to initialize database:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Export database to a downloadable JSON file
+   */
+  async exportToFile() {
+    try {
+      // Collect all data from all stores
+      const exportData = {};
+      
+      for (const storeName in this.stores) {
+        const items = await this.getAllItems(storeName);
+        exportData[storeName] = items;
+      }
+      
+      // Create a Blob with the data
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      
+      // Create a download link and trigger it
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smarthaven_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+      
+      console.log('✅ Database exported successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to export database:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Import database from a JSON file
+   * @param {File} file The JSON file to import
+   * @param {boolean} clearExisting Whether to clear existing data before import
+   */
+  async importFromFile(file, clearExisting = false) {
+    try {
+      // Read the file
+      const text = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+      
+      // Parse the JSON
+      const data = JSON.parse(text);
+      
+      // Import each store
+      for (const [storeName, items] of Object.entries(data)) {
+        // Make sure the store exists
+        if (!this.stores[storeName]) {
+          this.stores[storeName] = localforage.createInstance({
+            name: 'smartHavenDB',
+            storeName
+          });
+        }
+        
+        // Clear existing data if requested
+        if (clearExisting) {
+          await this.clearStore(storeName);
+        }
+        
+        // Save each item
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (item && item.id) {
+              await this.setItem(storeName, item.id, item);
+            }
+          }
+        }
+      }
+      
+      console.log('✅ Database imported successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to import database:', error);
       return false;
     }
   }

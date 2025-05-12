@@ -8,10 +8,11 @@ import {
   Clock, 
   LineChart, 
   Mic,
-  Settings
+  Settings,
+  Menu
 } from 'lucide-react';
 
-const MobileNav = () => {
+const MobileNav = ({ onMenuClick }) => {
   const [location] = useLocation();
   
   const navItems = [
@@ -19,7 +20,7 @@ const MobileNav = () => {
     { icon: Smartphone, label: 'Devices', path: '/devices' },
     { icon: null, label: '', path: '' }, // Placeholder for mic button
     { icon: Zap, label: 'Scenes', path: '/scenes' },
-    { icon: LineChart, label: 'Analytics', path: '/analytics' }
+    { icon: Menu, label: 'Menu', path: '', action: onMenuClick }
   ];
   
   const [isMicActive, setIsMicActive] = useState(false);
@@ -124,6 +125,32 @@ const MobileNav = () => {
             );
           }
           
+          // For menu button or items with custom actions
+          if (item.action) {
+            return (
+              <motion.div 
+                key={`action-${index}`}
+                className="flex flex-col items-center"
+                whileHover={{ y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={item.action}
+              >
+                <motion.div 
+                  className="p-2 rounded-full"
+                  whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
+                >
+                  <item.icon 
+                    size={24} 
+                    className="text-white/70" 
+                  />
+                </motion.div>
+                <span className="text-xs mt-1 text-white/70">
+                  {item.label}
+                </span>
+              </motion.div>
+            );
+          }
+          
           const isActive = location === item.path;
           
           return (
@@ -157,36 +184,6 @@ const MobileNav = () => {
             </Link>
           );
         })}
-        
-        {/* Added Settings to mobile nav */}
-        <Link href="/settings">
-          <motion.div 
-            className="flex flex-col items-center"
-            whileHover={{ y: -3 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.div 
-              className={`p-2 rounded-full ${location === '/settings' ? 'bg-white/10' : ''}`}
-              initial={false}
-              animate={location === '/settings' ? { 
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                scale: 1.1
-              } : { 
-                backgroundColor: "rgba(255, 255, 255, 0)",
-                scale: 1
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <Settings 
-                size={24} 
-                className={location === '/settings' ? 'text-primary' : 'text-white/70'} 
-              />
-            </motion.div>
-            <span className={`text-xs mt-1 ${location === '/settings' ? 'text-white' : 'text-white/70'}`}>
-              Settings
-            </span>
-          </motion.div>
-        </Link>
       </nav>
     </>
   );

@@ -19,9 +19,8 @@ import {
 } from 'lucide-react';
 import RoomModal from '@/components/modals/RoomModal';
 
-const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
+const Sidebar = ({ activeRoom, onRoomChange, rooms, isMobileOpen, setIsMobileOpen }) => {
   const [location] = useLocation();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -34,9 +33,7 @@ const Sidebar = ({ activeRoom, onRoomChange, rooms }) => {
     { path: '/settings', icon: Settings, label: 'Settings' }
   ];
 
-  const toggleMobileMenu = () => {
-    setIsMobileOpen(!isMobileOpen);
-  };
+  // Mobile menu is controlled from parent component
 
   return (
     <>
