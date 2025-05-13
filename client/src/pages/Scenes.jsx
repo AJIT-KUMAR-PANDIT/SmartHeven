@@ -10,7 +10,7 @@ import {
   CloudLightning,
 } from "lucide-react";
 import SceneModal from "@/components/modals/SceneModal";
-import * as jsonDB from "@/lib/database";
+import * as signalDB from "@/lib/signalDatabase";
 
 const Scenes = () => {
   const [scenes, setScenes] = useState([]);
@@ -22,8 +22,8 @@ const Scenes = () => {
   useEffect(() => {
     const loadScenes = async () => {
       try {
-        await jsonDB.initDatabase();
-        const scenesData = await jsonDB.getAllItems("scenes");
+        await signalDB.initDatabase();
+        const scenesData = await signalDB.getAllItems("scenes");
         setScenes(scenesData || []);
         setIsLoading(false);
       } catch (error) {
@@ -50,8 +50,12 @@ const Scenes = () => {
   // Activate a scene
   const handleActivateScene = async (sceneId) => {
     try {
-      await jsonDB.initDatabase();
-      await jsonDB.activateScene(sceneId);
+      await signalDB.initDatabase();
+      await signalDB.save("scenes", sceneId, {
+        ...scenes.find((scene) => scene.id === sceneId),
+        isActive: true,
+        lastTriggered: Date.now(),
+      });
 
       // Update scene in the UI
       setScenes(
@@ -71,8 +75,8 @@ const Scenes = () => {
   const handleDeleteScene = async (sceneId) => {
     if (window.confirm("Are you sure you want to delete this scene?")) {
       try {
-        await jsonDB.initDatabase();
-        await jsonDB.removeItem("scenes", sceneId);
+        await signalDB.initDatabase();
+        await signalDB.deleteItem("scenes", sceneId);
         setScenes(scenes.filter((scene) => scene.id !== sceneId));
       } catch (error) {
         console.error("Failed to delete scene:", error);
@@ -86,8 +90,8 @@ const Scenes = () => {
 
     // Refresh scenes list
     try {
-      await jsonDB.initDatabase();
-      const scenesData = await jsonDB.getAllItems("scenes");
+      await signalDB.initDatabase();
+      const scenesData = await signalDB.getAllItems("scenes");
       setScenes(scenesData || []);
     } catch (error) {
       console.error("Failed to refresh scenes:", error);

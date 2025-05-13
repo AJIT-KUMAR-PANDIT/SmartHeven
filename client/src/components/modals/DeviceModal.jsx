@@ -13,7 +13,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import * as jsonDB from "@/lib/database";
+import * as signalDB from "@/lib/signalDatabase";
 
 const deviceTypes = [
   { icon: Lightbulb, name: "Light", category: "lighting" },
@@ -38,8 +38,8 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     if (isOpen) {
       const loadData = async () => {
         try {
-          await jsonDB.initDatabase();
-          const roomsData = await jsonDB.getAllItems("rooms");
+          await signalDB.initDatabase();
+          const roomsData = await signalDB.getAllItems("rooms");
           setRooms(roomsData || []);
 
           if (roomsData?.length > 0 && !selectedRoom) {
@@ -81,7 +81,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
 
       // Prepare device data
       const deviceData = {
-        id: editDevice?.id || jsonDB.generateId(),
+        id: editDevice?.id || crypto.randomUUID(),
         name: deviceName.trim(),
         type: selectedType.category,
         room: selectedRoom,
@@ -95,8 +95,8 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
       };
 
       // Save to database
-      await jsonDB.initDatabase();
-      await jsonDB.save("devices", deviceData.id, deviceData);
+      await signalDB.initDatabase();
+      await signalDB.save("devices", deviceData.id, deviceData);
 
       setIsLoading(false);
       onClose();

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import MainContent from '@/components/MainContent';
-import * as jsonDB from '@/lib/database';
+import { useState, useEffect } from "react";
+import MainContent from "@/components/MainContent";
+import * as signalDB from "@/lib/signalDatabase";
 
 const Dashboard = () => {
-  const [activeRoom, setActiveRoom] = useState('');
+  const [activeRoom, setActiveRoom] = useState("");
   const [rooms, setRooms] = useState([]);
   const [devices, setDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,8 +14,11 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
 
+        // Initialize database
+        await signalDB.initDatabase();
+
         // Get rooms
-        const roomsData = await jsonDB.getAllItems('rooms');
+        const roomsData = await signalDB.getAllItems("rooms");
         if (roomsData.length > 0) {
           setRooms(roomsData);
           // Set first room as active if no room is selected
@@ -25,12 +28,12 @@ const Dashboard = () => {
         }
 
         // Get devices
-        const devicesData = await jsonDB.getAllItems('devices');
+        const devicesData = await signalDB.getAllItems("devices");
         setDevices(devicesData);
 
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error("Error loading data:", error);
         setIsLoading(false);
       }
     };
@@ -39,32 +42,26 @@ const Dashboard = () => {
   }, [activeRoom]);
 
   // Get devices for the active room
-  const filteredDevices = devices.filter(device => device.room === activeRoom);
+  const filteredDevices = devices.filter(
+    (device) => device.room === activeRoom
+  );
 
   // Get active room data
-  const activeRoomData = rooms.find(room => room.id === activeRoom);
+  const activeRoomData = rooms.find((room) => room.id === activeRoom);
 
   // Toggle device state
   const toggleDevice = async (deviceId) => {
     try {
-      // Get the device
-      const device = await jsonDB.getItem('devices', deviceId);
-      if (!device) return;
-
-      // Toggle the status
-      const newStatus = device.status === 'on' ? 'off' : 'on';
-
-      // Update the device in the database
-      await jsonDB.updateDeviceStatus(deviceId, { status: newStatus });
+      // Use SignalDB's toggleDevice function
+      const updatedDevice = await signalDB.toggleDevice(deviceId);
+      if (!updatedDevice) return;
 
       // Update the UI
-      setDevices(prev => 
-        prev.map(d => 
-          d.id === deviceId ? { ...d, status: newStatus } : d
-        )
+      setDevices((prev) =>
+        prev.map((d) => (d.id === deviceId ? updatedDevice : d))
       );
     } catch (error) {
-      console.error('Error toggling device:', error);
+      console.error("Error toggling device:", error);
     }
   };
 
@@ -83,7 +80,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex-1 p-4 md:p-6 overflow-auto">
-      <MainContent 
+      <MainContent
         activeRoom={activeRoom}
         devices={filteredDevices}
         toggleDevice={toggleDevice}

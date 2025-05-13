@@ -15,7 +15,7 @@ import {
   Save,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import * as jsonDB from "@/lib/database";
+import * as signalDB from "@/lib/signalDatabase";
 
 const icons = [
   { icon: Zap, name: "Zap" },
@@ -42,8 +42,8 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
       const loadDevices = async () => {
         try {
           // Initialize the database if not already initialized
-          await jsonDB.initDatabase();
-          const devices = await jsonDB.getAllItems("devices");
+          await signalDB.initDatabase();
+          const devices = await signalDB.getAllItems("devices");
           setAvailableDevices(devices || []);
 
           // If editing, populate form
@@ -123,7 +123,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
 
       // Prepare the scene object
       const sceneData = {
-        id: editScene?.id || jsonDB.generateId(),
+        id: editScene?.id || crypto.randomUUID(),
         name: sceneName.trim(),
         icon: selectedIcon.name,
         actions: selectedDevices.map((device) => ({
@@ -135,8 +135,8 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
       };
 
       // Save to database
-      await jsonDB.initDatabase();
-      await jsonDB.save("scenes", sceneData.id, sceneData);
+      await signalDB.initDatabase();
+      await signalDB.save("scenes", sceneData.id, sceneData);
 
       setIsLoading(false);
       onClose();
