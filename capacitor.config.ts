@@ -1,16 +1,9 @@
-
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.smarthome.app',
-  appName: 'Smart Home',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  },
-  plugins: {
-    // Add any required Capacitor plugins configuration here
-  }
+  appId: 'com.nakprc.smarthaven',
+  appName: 'SmartHaven',
+  webDir: 'dist'
 };
 
 export default config;

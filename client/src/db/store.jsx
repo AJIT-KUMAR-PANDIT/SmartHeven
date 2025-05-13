@@ -1,8 +1,7 @@
 // src/db/store.jsx
 
-import React, { useState, createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
-// Create context
 const AppStoreContext = createContext();
 
 export function AppStoreProvider({ children }) {
@@ -12,8 +11,9 @@ export function AppStoreProvider({ children }) {
   const [automations, setAutomations] = useState([]);
   const [history, setHistory] = useState([]);
   const [settings, setSettings] = useState({});
+  const [activeRoom, setActiveRoom] = useState(null);
 
-  const store = {
+  const value = {
     devices,
     setDevices,
     rooms,
@@ -26,20 +26,20 @@ export function AppStoreProvider({ children }) {
     setHistory,
     settings,
     setSettings,
+    activeRoom,
+    setActiveRoom,
   };
 
   return (
-    <AppStoreContext.Provider value={store}>
+    <AppStoreContext.Provider value={value}>
       {children}
     </AppStoreContext.Provider>
   );
 }
 
-// Custom Hook – only used inside React components!
 export function useAppStore() {
   const context = useContext(AppStoreContext);
-  if (!context) {
-    throw new Error("useAppStore must be used inside AppStoreProvider");
-  }
+  if (!context)
+    throw new Error("useAppStore must be used within AppStoreProvider");
   return context;
 }
