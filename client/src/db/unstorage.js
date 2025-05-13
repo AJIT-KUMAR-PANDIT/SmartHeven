@@ -1,25 +1,41 @@
-import { createStorage } from "unstorage";
-import indexedDbDriver from "unstorage/drivers/indexeddb";
-import capacitorPreferencesDriver from "unstorage/drivers/capacitor-preferences";
+// src/db/unstorage.js
 
 // Detect if we're running in Capacitor
-const isCapacitor = typeof window !== "undefined" && window?.cordova;
+const isCapacitor = typeof window !== "undefined" && !!window?.cordova;
 
-// Create appropriate driver
-let driver;
+let driverModule;
+
 if (isCapacitor) {
-  // Use Capacitor Preferences API
-  driver = capacitorPreferencesDriver({
-    base: "nakprc-smarthaven:",
-  });
+  // Load Capacitor driver dynamically
+  driverModule = import("./drivers/capacitorPreferencesDriver.js");
 } else {
-  // Use IndexedDB for web
-  driver = indexedDbDriver({
-    base: "nakprc-smarthaven:",
-    dbName: "nakprc-smarthaven-db",
-    storeName: "nakprc-smarthaven-store",
-  });
+  // Load IndexedDB driver dynamically
+  driverModule = import("./drivers/indexedDbDriver.js");
 }
 
-// Create universal storage instance
-export const storage = createStorage({ driver });
+// Import unstorage
+import { createStorage } from "unstorage";
+
+// Create storage instance after resolving driver
+driverModule
+  .then((module) => {
+    const driver = isCapacitor
+      ? module.capacitorPreferencesDriver({
+          base: "nakprc-smarthaven:",
+        })
+      : module.indexedDbDriver({
+          base: "nakprc-smarthaven:",
+          dbName: "nakprc-smarthaven-db",
+          storeName: "nakprc-smarthaven-store",
+        });
+
+    const storage = createStorage({ driver });
+    // Export it globally or attach to window for testing
+    window.storage = storage;
+  })
+  .catch((err) => {
+    console.error("Failed to load storage driver", err);
+  });
+
+// Export as placeholder until resolved
+export const storage = null;

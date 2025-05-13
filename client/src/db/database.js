@@ -1,5 +1,4 @@
 import { storage } from "./unstorage";
-import { refreshSignals } from "./utils";
 
 // Get all items from a collection
 export async function getAllItems(collectionName) {
@@ -26,7 +25,6 @@ export async function save(collectionName, id, item) {
   }
 
   await storage.setItem(collectionName, items);
-  await refreshSignals(collectionName);
   return item;
 }
 
@@ -35,7 +33,6 @@ export async function deleteItem(collectionName, id) {
   const items = await getAllItems(collectionName);
   const updated = items.filter((i) => i._id !== id);
   await storage.setItem(collectionName, updated);
-  await refreshSignals(collectionName);
   return true;
 }
 

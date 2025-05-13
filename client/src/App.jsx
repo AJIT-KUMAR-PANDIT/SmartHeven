@@ -8,6 +8,33 @@ import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
 import { useState, useEffect } from "react";
+import { AppStoreProvider, useAppStore } from "@/db/store";
+import { refreshSignals } from "@/db/refreshSignals";
+function AppInitializer() {
+  const {
+    setDevices,
+    setRooms,
+    setScenes,
+    setAutomations,
+    setHistory,
+    setSettings,
+  } = useAppStore();
+
+  useEffect(() => {
+    async function initDatabase() {
+      await refreshSignals("devices");
+      await refreshSignals("rooms");
+      await refreshSignals("scenes");
+      await refreshSignals("automations");
+      await refreshSignals("history");
+      await refreshSignals("settings");
+    }
+
+    initDatabase();
+  }, []);
+
+  return null; // No UI
+}
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,33 +68,36 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
-        <TooltipProvider>
-          <div className="min-h-screen bg-background">
-            <script
-              authed="location.reload()"
-              src="https://auth.util.repl.co/script.js"
-            ></script>
-            <TopNav />
-            <div className="flex h-[calc(100vh-4rem)]">
-              <Sidebar
-                isMobileOpen={isMobileMenuOpen}
-                setIsMobileOpen={setIsMobileMenuOpen}
-                rooms={rooms}
-                activeRoom={activeRoom}
-                onRoomChange={setActiveRoom}
-              />
-              <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
-                <Router />
-              </main>
+    <AppStoreProvider>
+      <AppInitializer />
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
+          <TooltipProvider>
+            <div className="min-h-screen bg-background">
+              <script
+                authed="location.reload()"
+                src="https://auth.util.repl.co/script.js"
+              ></script>
+              <TopNav />
+              <div className="flex h-[calc(100vh-4rem)]">
+                <Sidebar
+                  isMobileOpen={isMobileMenuOpen}
+                  setIsMobileOpen={setIsMobileMenuOpen}
+                  rooms={rooms}
+                  activeRoom={activeRoom}
+                  onRoomChange={setActiveRoom}
+                />
+                <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
+                  <Router />
+                </main>
+              </div>
+              <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
+              <Toaster />
             </div>
-            <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </AppStoreProvider>
   );
 }
 
