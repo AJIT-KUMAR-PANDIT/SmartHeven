@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// SceneModal.jsx
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 
-// Import Unstorage directly
-import { storage } from "@/db/unstorage";
+// Import database functions
+import { save, getAllItems } from "@/db/database";
 
 const icons = [
   { icon: Zap, name: "Zap" },
@@ -43,8 +44,8 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
     if (isOpen) {
       const loadDevices = async () => {
         try {
-          // Get all devices from unstorage
-          const devices = await storage.getItem("devices");
+          // Get all devices from database
+          const devices = await getAllItems("devices");
           setAvailableDevices(devices || []);
 
           // If editing, populate form
@@ -53,7 +54,6 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
             setSelectedIcon(
               icons.find((i) => i.name === editScene.icon) || icons[0]
             );
-
             if (editScene.actions && Array.isArray(editScene.actions)) {
               const sceneDevices = editScene.actions
                 .map((action) => ({
@@ -133,19 +133,8 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
         lastTriggered: null,
       };
 
-      // Get existing scenes
-      let scenes = (await storage.getItem("scenes")) || [];
-
-      // Update or add new scene
-      const index = scenes.findIndex((s) => s._id === sceneId);
-      if (index > -1) {
-        scenes[index] = sceneData;
-      } else {
-        scenes.push(sceneData);
-      }
-
-      // Save back to storage
-      await storage.setItem("scenes", scenes);
+      // ✅ Use database abstraction
+      await save("scenes", sceneId, sceneData);
 
       setIsLoading(false);
       onClose();

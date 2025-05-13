@@ -1,3 +1,4 @@
+// Scenes.jsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -10,7 +11,9 @@ import {
   CloudLightning,
 } from "lucide-react";
 import SceneModal from "@/components/modals/SceneModal";
-import { storage } from "@/db/unstorage";
+
+// Import database functions
+import { getAllItems, save, deleteItem } from "@/db/database";
 
 const Scenes = () => {
   const [scenes, setScenes] = useState([]);
@@ -18,13 +21,13 @@ const Scenes = () => {
   const [editingScene, setEditingScene] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load scenes from unstorage
+  // Load scenes from database
   useEffect(() => {
     const loadScenes = async () => {
       try {
         setIsLoading(true);
 
-        const scenesData = await storage.getItem("scenes");
+        const scenesData = await getAllItems("scenes");
         setScenes(scenesData || []);
 
         setIsLoading(false);
@@ -63,7 +66,18 @@ const Scenes = () => {
         return scene;
       });
 
-      await storage.setItem("scenes", updatedScenes);
+      // Save each updated scene individually
+      await Promise.all(
+        updatedScenes.map((scene) =>
+          save("scenes", scene.id, {
+            ...scene,
+            isActive: true,
+            lastTriggered: Date.now(),
+          })
+        )
+      );
+
+      // Update UI
       setScenes(updatedScenes);
     } catch (error) {
       console.error("Failed to activate scene:", error);
@@ -74,9 +88,11 @@ const Scenes = () => {
   const handleDeleteScene = async (sceneId) => {
     if (window.confirm("Are you sure you want to delete this scene?")) {
       try {
-        const updatedScenes = scenes.filter((scene) => scene.id !== sceneId);
-        await storage.setItem("scenes", updatedScenes);
-        setScenes(updatedScenes);
+        // Remove from database
+        await deleteItem("scenes", sceneId);
+
+        // Update UI
+        setScenes((prev) => prev.filter((scene) => scene.id !== sceneId));
       } catch (error) {
         console.error("Failed to delete scene:", error);
       }
@@ -87,7 +103,7 @@ const Scenes = () => {
   const handleModalClose = async () => {
     setIsModalOpen(false);
     try {
-      const scenesData = await storage.getItem("scenes");
+      const scenesData = await getAllItems("scenes");
       setScenes(scenesData || []);
     } catch (error) {
       console.error("Failed to refresh scenes:", error);

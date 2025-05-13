@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// DeviceModal.jsx
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Smartphone,
@@ -12,10 +13,11 @@ import {
   Save,
   PlusCircle,
 } from "lucide-react";
+
 import Modal from "@/components/ui/modal";
 
-// Import unstorage directly
-import { storage } from "@/db/unstorage";
+// Import database functions
+import { save, getAllItems } from "@/db/database";
 
 const deviceTypes = [
   { icon: Lightbulb, name: "Light", category: "lighting" },
@@ -35,13 +37,13 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load rooms and populate form if editing
+  // Load rooms and device data
   useEffect(() => {
     if (isOpen) {
       const loadData = async () => {
         try {
-          // Fetch rooms from storage
-          const roomsData = await storage.getItem("rooms");
+          // Fetch rooms from database
+          const roomsData = await getAllItems("rooms");
           setRooms(roomsData || []);
 
           if (roomsData?.length > 0 && !selectedRoom) {
@@ -51,10 +53,10 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           // If editing, populate form
           if (editDevice) {
             setDeviceName(editDevice.name);
-            setSelectedType(
-              deviceTypes.find((t) => t.category === editDevice.type) ||
-                deviceTypes[0]
+            const matchedType = deviceTypes.find(
+              (t) => t.category === editDevice.type
             );
+            setSelectedType(matchedType || deviceTypes[0]);
             if (editDevice.room) {
               setSelectedRoom(editDevice.room);
             }
@@ -75,6 +77,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     }
   }, [isOpen, editDevice]);
 
+  // Handle saving device
   const handleSubmit = async () => {
     if (!deviceName.trim() || !selectedRoom) return;
 
@@ -83,7 +86,6 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
 
       const deviceId = editDevice?.id || Date.now().toString(); // fallback ID
 
-      // Prepare device data
       const deviceData = {
         _id: deviceId,
         id: deviceId,
@@ -92,26 +94,15 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
         room: selectedRoom,
         status: "off",
         value: 0,
-        battery: Math.floor(Math.random() * 100), // Random battery level
+        battery: Math.floor(Math.random() * 100),
         lastUpdated: Date.now(),
         connected: true,
         firmware: "1.0.0",
         settings: {},
       };
 
-      // Get existing devices
-      let devices = (await storage.getItem("devices")) || [];
-
-      // Update or add new
-      const index = devices.findIndex((d) => d._id === deviceId);
-      if (index > -1) {
-        devices[index] = deviceData;
-      } else {
-        devices.push(deviceData);
-      }
-
-      // Save back to storage
-      await storage.setItem("devices", devices);
+      // ✅ Use database abstraction
+      await save("devices", deviceId, deviceData);
 
       setIsLoading(false);
       onClose();

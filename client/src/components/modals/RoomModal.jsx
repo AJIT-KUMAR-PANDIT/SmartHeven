@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// RoomModal.jsx
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -14,8 +15,8 @@ import {
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 
-// Import Unstorage directly
-import { storage } from "@/db/unstorage";
+// Import database functions
+import { save, getAllItems } from "@/db/database";
 
 const roomTypes = [
   { icon: Sofa, name: "Living Room", type: "living" },
@@ -37,18 +38,21 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
   // Populate form if editing
   useEffect(() => {
     if (isOpen) {
-      if (editRoom) {
-        setRoomName(editRoom.name || "");
-        setSelectedType(
-          roomTypes.find((t) => t.type === editRoom.type) || roomTypes[0]
-        );
-        setFloor(editRoom.floor || 1);
-      } else {
-        // Reset for new room
-        setRoomName("");
-        setSelectedType(roomTypes[0]);
-        setFloor(1);
-      }
+      const loadData = async () => {
+        if (editRoom) {
+          setRoomName(editRoom.name || "");
+          setSelectedType(
+            roomTypes.find((t) => t.type === editRoom.type) || roomTypes[0]
+          );
+          setFloor(editRoom.floor || 1);
+        } else {
+          setRoomName("");
+          setSelectedType(roomTypes[0]);
+          setFloor(1);
+        }
+      };
+
+      loadData();
     }
   }, [isOpen, editRoom]);
 
@@ -70,19 +74,8 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         devices: editRoom?.devices || [],
       };
 
-      // Get existing rooms
-      let rooms = (await storage.getItem("rooms")) || [];
-
-      // Update or add new room
-      const index = rooms.findIndex((r) => r._id === roomId);
-      if (index > -1) {
-        rooms[index] = roomData;
-      } else {
-        rooms.push(roomData);
-      }
-
-      // Save back to storage
-      await storage.setItem("rooms", rooms);
+      // ✅ Use database abstraction
+      await save("rooms", roomId, roomData);
 
       setIsLoading(false);
       onClose();

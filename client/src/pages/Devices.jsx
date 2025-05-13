@@ -1,3 +1,4 @@
+// Devices.jsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 import DeviceModal from "@/components/modals/DeviceModal";
 
-// Import Unstorage directly
-import { storage } from "@/db/unstorage";
+// Import database functions
+import { getAllItems, save, deleteItem } from "@/db/database";
 
 // Device type to icon mapping
 const deviceIcons = {
@@ -36,18 +37,16 @@ const Devices = () => {
   const [selectedRoomFilter, setSelectedRoomFilter] = useState("all");
   const [rooms, setRooms] = useState([]);
 
-  // Load devices and rooms from unstorage
+  // Load devices and rooms
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
 
-        // Get devices
-        const devicesData = await storage.getItem("devices");
-        setDevices(devicesData || []);
+        const devicesData = await getAllItems("devices");
+        const roomsData = await getAllItems("rooms");
 
-        // Get rooms
-        const roomsData = await storage.getItem("rooms");
+        setDevices(devicesData || []);
         setRooms(roomsData || []);
 
         setIsLoading(false);
@@ -81,18 +80,21 @@ const Devices = () => {
   // Toggle device on/off
   const handleToggleDevice = async (deviceId) => {
     try {
-      const updatedDevices = devices.map((device) =>
-        device.id === deviceId
-          ? { ...device, status: device.status === "on" ? "off" : "on" }
-          : device
+      const device = devices.find((d) => d.id === deviceId);
+      if (!device) return;
+
+      const updatedDevice = {
+        ...device,
+        status: device.status === "on" ? "off" : "on",
+      };
+
+      // Update UI
+      setDevices((prev) =>
+        prev.map((d) => (d.id === deviceId ? updatedDevice : d))
       );
 
-      // Save back to storage
-      await storage.setItem("devices", updatedDevices);
-      setDevices(updatedDevices);
-
-      // Show success toast
-      console.log("Device toggled successfully");
+      // Save to database
+      await save("devices", deviceId, updatedDevice);
     } catch (error) {
       console.error("Failed to toggle device:", error);
     }
@@ -102,25 +104,14 @@ const Devices = () => {
   const handleDeleteDevice = async (deviceId) => {
     if (window.confirm("Are you sure you want to delete this device?")) {
       try {
-        const updatedDevices = devices.filter(
-          (device) => device.id !== deviceId
-        );
-        await storage.setItem("devices", updatedDevices);
-        setDevices(updatedDevices);
+        // Remove from database
+        await deleteItem("devices", deviceId);
+
+        // Update UI
+        setDevices((prev) => prev.filter((d) => d.id !== deviceId));
       } catch (error) {
         console.error("Failed to delete device:", error);
       }
-    }
-  };
-
-  // Handle modal close and refresh devices
-  const handleModalClose = async () => {
-    setIsModalOpen(false);
-    try {
-      const devicesData = await storage.getItem("devices");
-      setDevices(devicesData || []);
-    } catch (error) {
-      console.error("Failed to refresh devices:", error);
     }
   };
 
@@ -196,7 +187,6 @@ const Devices = () => {
       {/* Devices Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {isLoading ? (
-          // Loading skeletons
           [...Array(8)].map((_, i) => (
             <motion.div
               key={i}
@@ -212,7 +202,6 @@ const Devices = () => {
             </motion.div>
           ))
         ) : filteredDevices.length === 0 ? (
-          // Empty state
           <motion.div
             className="col-span-full flex flex-col items-center justify-center glass rounded-xl p-10 border border-dashed border-white/10"
             initial={{ opacity: 0 }}
@@ -227,8 +216,8 @@ const Devices = () => {
             </h3>
             <p className="text-sm text-foreground/60 text-center mb-6 max-w-md">
               {selectedRoomFilter === "all"
-                ? "Add your first smart device to get started with your smart home."
-                : `This room doesn't have any devices yet. Add a device to this room.`}
+                ? "Add your first smart device to get started."
+                : "This room doesn't have any devices yet."}
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -241,7 +230,6 @@ const Devices = () => {
             </motion.button>
           </motion.div>
         ) : (
-          // Device cards
           filteredDevices.map((device, index) => {
             const DeviceIcon = deviceIcons[device.type] || Smartphone;
             return (
@@ -251,7 +239,6 @@ const Devices = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                layoutId={`device-${device.id}`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center">
@@ -294,8 +281,7 @@ const Devices = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Device status indicators */}
+                {/* Status indicators */}
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="flex items-center text-xs">
                     <Wifi
@@ -308,14 +294,13 @@ const Devices = () => {
                       {device.connected ? "Online" : "Offline"}
                     </span>
                   </div>
-                  {device.battery !== undefined && (
+                  {typeof device.battery === "number" && (
                     <div className="flex items-center text-xs">
                       <Battery size={12} className="mr-1" />
                       <span className="opacity-60">{device.battery}%</span>
                     </div>
                   )}
                 </div>
-
                 {/* Toggle button */}
                 <motion.button
                   whileHover={{ scale: 1.03 }}
@@ -341,7 +326,7 @@ const Devices = () => {
       {/* Device Modal */}
       <DeviceModal
         isOpen={isModalOpen}
-        onClose={handleModalClose}
+        onClose={() => setIsModalOpen(false)}
         editDevice={editingDevice}
       />
     </div>

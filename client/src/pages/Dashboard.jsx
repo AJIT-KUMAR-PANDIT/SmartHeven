@@ -1,6 +1,7 @@
+// Dashboard.jsx
 import { useState, useEffect } from "react";
 import MainContent from "@/components/MainContent";
-import { storage } from "@/db/unstorage";
+import { getAllItems, save } from "@/db/database";
 
 const Dashboard = () => {
   const [activeRoom, setActiveRoom] = useState("");
@@ -8,14 +9,14 @@ const Dashboard = () => {
   const [devices, setDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from unstorage
+  // Load data from database
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
 
         // Get rooms
-        const roomsData = await storage.getItem("rooms");
+        const roomsData = await getAllItems("rooms");
         if (roomsData?.length > 0) {
           setRooms(roomsData);
           if (!activeRoom) {
@@ -24,7 +25,7 @@ const Dashboard = () => {
         }
 
         // Get devices
-        const devicesData = await storage.getItem("devices");
+        const devicesData = await getAllItems("devices");
         setDevices(devicesData || []);
 
         setIsLoading(false);
@@ -48,21 +49,21 @@ const Dashboard = () => {
   // Toggle device state
   const toggleDevice = async (deviceId) => {
     try {
-      const updatedDevices = devices.map((device) => {
-        if (device.id === deviceId) {
-          return {
-            ...device,
-            status: device.status === "on" ? "off" : "on",
-          };
-        }
-        return device;
-      });
+      const device = devices.find((d) => d.id === deviceId);
+      if (!device) return;
+
+      const updatedDevice = {
+        ...device,
+        status: device.status === "on" ? "off" : "on",
+      };
 
       // Update UI
-      setDevices(updatedDevices);
+      setDevices((prev) =>
+        prev.map((d) => (d.id === deviceId ? updatedDevice : d))
+      );
 
-      // Save back to storage
-      await storage.setItem("devices", updatedDevices);
+      // ✅ Use database abstraction
+      await save("devices", deviceId, updatedDevice);
     } catch (error) {
       console.error("Error toggling device:", error);
     }
@@ -88,7 +89,7 @@ const Dashboard = () => {
         devices={filteredDevices}
         toggleDevice={toggleDevice}
         roomData={activeRoomData}
-        onRoomChange={handleRoomChange} // Optional prop
+        onRoomChange={handleRoomChange}
       />
     </div>
   );
