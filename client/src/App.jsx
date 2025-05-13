@@ -1,15 +1,13 @@
-
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@/components/ui/theme-provider';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Toaster } from '@/components/ui/toaster';
-import { queryClient } from '@/lib/queryClient';
-import Router from './Router';
-import MobileNav from '@/components/MobileNav';
-import Sidebar from '@/components/Sidebar';
-import TopNav from '@/components/TopNav';
-import { useState, useEffect } from 'react';
-import { initDatabase, getAllItems } from '@/lib/database';
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import { queryClient } from "@/lib/queryClient";
+import Router from "./Router";
+import MobileNav from "@/components/MobileNav";
+import Sidebar from "@/components/Sidebar";
+import TopNav from "@/components/TopNav";
+import { useState, useEffect } from "react";
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,15 +20,21 @@ function App() {
     const loadData = async () => {
       try {
         const db = await initDatabase();
-        const loadedRooms = await db.rooms.find().exec().then(res => res.map(d => d.toJSON()));
-        const loadedDevices = await db.devices.find().exec().then(res => res.map(d => d.toJSON()));
+        const loadedRooms = await db.rooms
+          .find()
+          .exec()
+          .then((res) => res.map((d) => d.toJSON()));
+        const loadedDevices = await db.devices
+          .find()
+          .exec()
+          .then((res) => res.map((d) => d.toJSON()));
         setRooms(loadedRooms);
         setDevices(loadedDevices);
         if (loadedRooms.length > 0) {
           setActiveRoom(loadedRooms[0].id);
         }
       } catch (err) {
-        console.error('Error loading data:', err);
+        console.error("Error loading data:", err);
       }
     };
     loadData();
@@ -41,13 +45,13 @@ function App() {
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
         <TooltipProvider>
           <div className="min-h-screen bg-background">
-  <script
-    authed="location.reload()"
-    src="https://auth.util.repl.co/script.js"
-  ></script>
+            <script
+              authed="location.reload()"
+              src="https://auth.util.repl.co/script.js"
+            ></script>
             <TopNav />
             <div className="flex h-[calc(100vh-4rem)]">
-              <Sidebar 
+              <Sidebar
                 isMobileOpen={isMobileMenuOpen}
                 setIsMobileOpen={setIsMobileMenuOpen}
                 rooms={rooms}
