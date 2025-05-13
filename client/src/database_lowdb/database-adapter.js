@@ -22,7 +22,7 @@ export class UnifiedDBAdapter {
                 directory: Directory.Data,
               });
               return JSON.parse(contents.data);
-            } catch {
+            } catch (error) {
               return null;
             }
           },
@@ -31,6 +31,7 @@ export class UnifiedDBAdapter {
               path: this.filename,
               data: JSON.stringify(data),
               directory: Directory.Data,
+              encoding: "utf8",
             });
           },
         }

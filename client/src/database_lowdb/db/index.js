@@ -1,3 +1,7 @@
-export * as DeviceDB from "./devicemodal.database.js";
-export * as RoomDB from "./roommodal.database.js";
-export * as SceneDB from "./scenemodal.database.js";
+import DeviceDB from "./devicemodal.database.js";
+
+export { DeviceDB };
+import RoomDB from "./roommodal.database.js";
+import SceneDB from "./scenemodal.database.js";
+
+export { RoomDB, SceneDB };

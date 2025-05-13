@@ -1,16 +1,20 @@
-import { jsonDB } from "../database-adapter";
-
-export const getAllScenes = async () => {
-  await jsonDB.init();
-  return await jsonDB.getAllItems("scenes");
+const SceneDB = {
+  async init() {
+    // Initialization handled by lowdb
+  },
+  async getAllItems() {
+    return await this.db.get('scenes').value();
+  },
+  async save(id, data) {
+    await this.db.get('scenes').set(id, data).write();
+    return data;
+  },
+  async remove(id) {
+    await this.db.get('scenes').unset(id).write();
+  },
+  generateId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
 };
 
-export const saveScene = async (sceneData) => {
-  await jsonDB.init();
-  return await jsonDB.save("scenes", sceneData.id, sceneData);
-};
-
-export const deleteScene = async (sceneId) => {
-  await jsonDB.init();
-  return await jsonDB.remove("scenes", sceneId);
-};
+export default SceneDB;

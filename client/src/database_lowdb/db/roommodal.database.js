@@ -1,16 +1,20 @@
-import { jsonDB } from "../database-adapter";
-
-export const getAllRooms = async () => {
-  await jsonDB.init();
-  return await jsonDB.getAllItems("rooms");
+const RoomDB = {
+  async init() {
+    // Initialization handled by lowdb
+  },
+  async getAllItems() {
+    return await this.db.get('rooms').value();
+  },
+  async save(id, data) {
+    await this.db.get('rooms').set(id, data).write();
+    return data;
+  },
+  async remove(id) {
+    await this.db.get('rooms').unset(id).write();
+  },
+  generateId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
 };
 
-export const saveRoom = async (roomData) => {
-  await jsonDB.init();
-  return await jsonDB.save("rooms", roomData.id, roomData);
-};
-
-export const deleteRoom = async (roomId) => {
-  await jsonDB.init();
-  return await jsonDB.remove("rooms", roomId);
-};
+export default RoomDB;

@@ -1,16 +1,20 @@
-import { jsonDB } from "../database-adapter";
-
-export const getAllDevices = async () => {
-  await jsonDB.init();
-  return await jsonDB.getAllItems("devices");
+const DeviceDB = {
+  async init() {
+    // Initialization handled by lowdb
+  },
+  async getAllItems() {
+    return await this.db.get("devices").value();
+  },
+  async save(id, data) {
+    await this.db.get("devices").set(id, data).write();
+    return data;
+  },
+  async remove(id) {
+    await this.db.get("devices").unset(id).write();
+  },
+  generateId() {
+    return Math.random().toString(36).substr(2, 9);
+  },
 };
 
-export const saveDevice = async (deviceData) => {
-  await jsonDB.init();
-  return await jsonDB.save("devices", deviceData.id, deviceData);
-};
-
-export const deleteDevice = async (deviceId) => {
-  await jsonDB.init();
-  return await jsonDB.remove("devices", deviceId);
-};
+export default DeviceDB;

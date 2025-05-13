@@ -1,35 +1,36 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Smartphone, 
-  Lightbulb, 
-  Thermometer, 
-  Speaker, 
-  Camera, 
-  Lock, 
-  Globe, 
-  Tv, 
-  Save, 
-  PlusCircle
-} from 'lucide-react';
-import Modal from '@/components/ui/modal';
-import * as jsonDB from '@/lib/database';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Smartphone,
+  Lightbulb,
+  Thermometer,
+  Speaker,
+  Camera,
+  Lock,
+  Globe,
+  Tv,
+  Save,
+  PlusCircle,
+} from "lucide-react";
+import Modal from "@/components/ui/modal";
+import { DeviceDB } from "@/database_lowdb/db";
+import { isProduction } from "@/utils/environment";
 
 const deviceTypes = [
-  { icon: Lightbulb, name: 'Light', category: 'lighting' },
-  { icon: Thermometer, name: 'Thermostat', category: 'climate' },
-  { icon: Speaker, name: 'Speaker', category: 'audio' },
-  { icon: Camera, name: 'Camera', category: 'security' },
-  { icon: Lock, name: 'Smart Lock', category: 'security' },
-  { icon: Globe, name: 'Sensor', category: 'sensor' },
-  { icon: Tv, name: 'TV', category: 'entertainment' },
-  { icon: Smartphone, name: 'Other', category: 'other' },
+  { icon: Lightbulb, name: "Light", category: "lighting" },
+  { icon: Thermometer, name: "Thermostat", category: "climate" },
+  { icon: Speaker, name: "Speaker", category: "audio" },
+  { icon: Camera, name: "Camera", category: "security" },
+  { icon: Lock, name: "Smart Lock", category: "security" },
+  { icon: Globe, name: "Sensor", category: "sensor" },
+  { icon: Tv, name: "TV", category: "entertainment" },
+  { icon: Smartphone, name: "Other", category: "other" },
 ];
 
 const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
-  const [deviceName, setDeviceName] = useState('');
+  const [deviceName, setDeviceName] = useState("");
   const [selectedType, setSelectedType] = useState(deviceTypes[0]);
-  const [selectedRoom, setSelectedRoom] = useState('');
+  const [selectedRoom, setSelectedRoom] = useState("");
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,8 +39,9 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     if (isOpen) {
       const loadData = async () => {
         try {
-          await jsonDB.init();
-          const roomsData = await jsonDB.getAllItems('rooms');
+          // Replace jsonDB.init() with DeviceDB.init()
+          await DeviceDB.init();
+          const roomsData = await DeviceDB.getAllItems("rooms");
           setRooms(roomsData || []);
 
           if (roomsData?.length > 0 && !selectedRoom) {
@@ -50,21 +52,22 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           if (editDevice) {
             setDeviceName(editDevice.name);
             setSelectedType(
-              deviceTypes.find(t => t.category === editDevice.type) || deviceTypes[0]
+              deviceTypes.find((t) => t.category === editDevice.type) ||
+                deviceTypes[0]
             );
             if (editDevice.room) {
               setSelectedRoom(editDevice.room);
             }
           } else {
             // Reset form for new device
-            setDeviceName('');
+            setDeviceName("");
             setSelectedType(deviceTypes[0]);
             if (roomsData?.length > 0) {
               setSelectedRoom(roomsData[0].id);
             }
           }
         } catch (error) {
-          console.error('Failed to load data:', error);
+          console.error("Failed to load data:", error);
         }
       };
 
@@ -80,36 +83,36 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
 
       // Prepare device data
       const deviceData = {
-        id: editDevice?.id || jsonDB.generateId(),
+        id: editDevice?.id || DeviceDB.generateId(),
         name: deviceName.trim(),
         type: selectedType.category,
         room: selectedRoom,
-        status: 'off',
+        status: "off",
         value: 0,
         battery: Math.floor(Math.random() * 100), // Random battery level
         lastUpdated: Date.now(),
         connected: true,
-        firmware: '1.0.0',
-        settings: {}
+        firmware: "1.0.0",
+        settings: {},
       };
 
       // Save to database
-      await jsonDB.init();
-      await jsonDB.save('devices', deviceData.id, deviceData);
+      await DeviceDB.init();
+      await DeviceDB.save("devices", deviceData.id, deviceData);
 
       setIsLoading(false);
       onClose();
     } catch (error) {
-      console.error('Error saving device:', error);
+      console.error("Error saving device:", error);
       setIsLoading(false);
     }
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={editDevice ? 'Edit Device' : 'Add New Device'}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editDevice ? "Edit Device" : "Add New Device"}
       width="max-w-lg"
     >
       <div className="space-y-6">
@@ -135,14 +138,16 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedType(type)}
                 className={`flex flex-col items-center p-3 rounded-lg ${
-                  selectedType.name === type.name 
-                    ? 'bg-primary/20 border border-primary/50' 
-                    : 'bg-white/5 border border-white/10'
+                  selectedType.name === type.name
+                    ? "bg-primary/20 border border-primary/50"
+                    : "bg-white/5 border border-white/10"
                 }`}
               >
-                <type.icon 
-                  size={24} 
-                  className={`mb-2 ${selectedType.name === type.name ? 'text-primary' : ''}`} 
+                <type.icon
+                  size={24}
+                  className={`mb-2 ${
+                    selectedType.name === type.name ? "text-primary" : ""
+                  }`}
                 />
                 <span className="text-xs text-center">{type.name}</span>
               </motion.button>
@@ -155,25 +160,30 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm">Room</label>
             {rooms.length === 0 && (
-              <span className="text-xs text-yellow-500">No rooms available</span>
+              <span className="text-xs text-yellow-500">
+                No rooms available
+              </span>
             )}
           </div>
 
           {rooms.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {rooms.map(room => (
+              {rooms.map((room) => (
                 <motion.button
                   key={room.id}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedRoom(room.id)}
                   className={`flex items-center px-3 py-2 rounded-lg ${
-                    selectedRoom === room.id 
-                      ? 'bg-primary/20 border border-primary/50' 
-                      : 'bg-white/5 border border-white/10'
+                    selectedRoom === room.id
+                      ? "bg-primary/20 border border-primary/50"
+                      : "bg-white/5 border border-white/10"
                   }`}
                 >
                   <div className="w-6 h-6 rounded-md bg-black/20 flex items-center justify-center mr-2">
-                    <Home size={14} className={selectedRoom === room.id ? 'text-primary' : ''} />
+                    <Home
+                      size={14}
+                      className={selectedRoom === room.id ? "text-primary" : ""}
+                    />
                   </div>
                   <span className="text-sm">{room.name}</span>
                 </motion.button>
@@ -205,13 +215,13 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             onClick={handleSubmit}
             disabled={isLoading || !deviceName.trim() || !selectedRoom}
             className={`px-4 py-2 rounded-lg bg-primary text-white flex items-center ${
-              (isLoading || !deviceName.trim() || !selectedRoom)
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-primary/90'
+              isLoading || !deviceName.trim() || !selectedRoom
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-primary/90"
             }`}
           >
             <Save size={16} className="mr-2" />
-            {isLoading ? 'Saving...' : 'Save Device'}
+            {isLoading ? "Saving..." : "Save Device"}
           </motion.button>
         </div>
       </div>

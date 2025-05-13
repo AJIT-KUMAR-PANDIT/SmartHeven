@@ -1,33 +1,33 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Home, 
-  Sofa, 
-  UtensilsCrossed, 
-  Bed, 
-  Bath, 
-  Tv, 
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Home,
+  Sofa,
+  UtensilsCrossed,
+  Bed,
+  Bath,
+  Tv,
   MonitorPlay,
   Footprints,
   Shuffle,
-  Save
-} from 'lucide-react';
-import Modal from '@/components/ui/modal';
-import * as jsonDB from '@/lib/database';
+  Save,
+} from "lucide-react";
+import Modal from "@/components/ui/modal";
+import { RoomDB } from "@/database_lowdb/db";
 
 const roomTypes = [
-  { icon: Sofa, name: 'Living Room', type: 'living' },
-  { icon: UtensilsCrossed, name: 'Kitchen', type: 'kitchen' },
-  { icon: Bed, name: 'Bedroom', type: 'bedroom' },
-  { icon: Bath, name: 'Bathroom', type: 'bathroom' },
-  { icon: Tv, name: 'Media Room', type: 'media' },
-  { icon: MonitorPlay, name: 'Office', type: 'office' },
-  { icon: Footprints, name: 'Hallway', type: 'hallway' },
-  { icon: Home, name: 'Other', type: 'other' },
+  { icon: Sofa, name: "Living Room", type: "living" },
+  { icon: UtensilsCrossed, name: "Kitchen", type: "kitchen" },
+  { icon: Bed, name: "Bedroom", type: "bedroom" },
+  { icon: Bath, name: "Bathroom", type: "bathroom" },
+  { icon: Tv, name: "Media Room", type: "media" },
+  { icon: MonitorPlay, name: "Office", type: "office" },
+  { icon: Footprints, name: "Hallway", type: "hallway" },
+  { icon: Home, name: "Other", type: "other" },
 ];
 
 const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
-  const [roomName, setRoomName] = useState('');
+  const [roomName, setRoomName] = useState("");
   const [selectedType, setSelectedType] = useState(roomTypes[0]);
   const [floor, setFloor] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,12 +38,12 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
       if (editRoom) {
         setRoomName(editRoom.name);
         setSelectedType(
-          roomTypes.find(t => t.type === editRoom.type) || roomTypes[0]
+          roomTypes.find((t) => t.type === editRoom.type) || roomTypes[0]
         );
         setFloor(editRoom.floor || 1);
       } else {
         // Reset form for new room
-        setRoomName('');
+        setRoomName("");
         setSelectedType(roomTypes[0]);
         setFloor(1);
       }
@@ -58,31 +58,31 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
 
       // Prepare room data
       const roomData = {
-        id: editRoom?.id || jsonDB.generateId(),
+        id: editRoom?.id || RoomDB.generateId(),
         name: roomName.trim(),
         type: selectedType.type,
         icon: selectedType.icon,
         floor: parseInt(floor),
-        devices: editRoom?.devices || []
+        devices: editRoom?.devices || [],
       };
 
       // Save to database
-      await jsonDB.init();
-      await jsonDB.save('rooms', roomData.id, roomData);
+      await RoomDB.init();
+      await RoomDB.save(roomData.id, roomData);
 
       setIsLoading(false);
       onClose();
     } catch (error) {
-      console.error('Error saving room:', error);
+      console.error("Error saving room:", error);
       setIsLoading(false);
     }
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={editRoom ? 'Edit Room' : 'Add New Room'}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editRoom ? "Edit Room" : "Add New Room"}
       width="max-w-lg"
     >
       <div className="space-y-6">
@@ -101,8 +101,19 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => {
-              const names = ['Living Room', 'Kitchen', 'Master Bedroom', 'Guest Room', 'Bathroom', 'Office', 'Game Room', 'Dining Room', 'Hallway'];
-              const randomName = names[Math.floor(Math.random() * names.length)];
+              const names = [
+                "Living Room",
+                "Kitchen",
+                "Master Bedroom",
+                "Guest Room",
+                "Bathroom",
+                "Office",
+                "Game Room",
+                "Dining Room",
+                "Hallway",
+              ];
+              const randomName =
+                names[Math.floor(Math.random() * names.length)];
               setRoomName(randomName);
             }}
             className="mt-2 px-2 py-1 rounded text-xs flex items-center text-primary/70 hover:text-primary"
@@ -122,14 +133,16 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedType(type)}
                 className={`flex flex-col items-center p-3 rounded-lg ${
-                  selectedType.name === type.name 
-                    ? 'bg-primary/20 border border-primary/50' 
-                    : 'bg-white/5 border border-white/10'
+                  selectedType.name === type.name
+                    ? "bg-primary/20 border border-primary/50"
+                    : "bg-white/5 border border-white/10"
                 }`}
               >
-                <type.icon 
-                  size={24} 
-                  className={`mb-2 ${selectedType.name === type.name ? 'text-primary' : ''}`} 
+                <type.icon
+                  size={24}
+                  className={`mb-2 ${
+                    selectedType.name === type.name ? "text-primary" : ""
+                  }`}
                 />
                 <span className="text-xs text-center">{type.name}</span>
               </motion.button>
@@ -150,15 +163,15 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
               className="w-24 px-4 py-3 rounded-lg glass border border-white/10 bg-white/5 focus:outline-none focus:border-primary/50"
             />
             <div className="flex space-x-1">
-              {[1, 2, 3].map(f => (
+              {[1, 2, 3].map((f) => (
                 <motion.button
                   key={f}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setFloor(f)}
                   className={`px-3 py-2 rounded-lg ${
-                    parseInt(floor) === f 
-                      ? 'bg-primary/20 border border-primary/50' 
-                      : 'bg-white/5 border border-white/10'
+                    parseInt(floor) === f
+                      ? "bg-primary/20 border border-primary/50"
+                      : "bg-white/5 border border-white/10"
                   }`}
                 >
                   {f}
@@ -183,13 +196,13 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             onClick={handleSubmit}
             disabled={isLoading || !roomName.trim()}
             className={`px-4 py-2 rounded-lg bg-primary text-white flex items-center ${
-              (isLoading || !roomName.trim())
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-primary/90'
+              isLoading || !roomName.trim()
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-primary/90"
             }`}
           >
             <Save size={16} className="mr-2" />
-            {isLoading ? 'Saving...' : 'Save Room'}
+            {isLoading ? "Saving..." : "Save Room"}
           </motion.button>
         </div>
       </div>
