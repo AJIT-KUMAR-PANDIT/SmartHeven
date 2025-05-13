@@ -1,36 +1,36 @@
-import { useState, useEffect } from 'react';
-import MainContent from '@/components/MainContent';
-import * as jsonDB from '@/lib/database';
+// Dashboard.jsx
+import { useState, useEffect } from "react";
+import MainContent from "@/components/MainContent";
+import { getAllItems, save } from "@/db/database";
 
 const Dashboard = () => {
-  const [activeRoom, setActiveRoom] = useState('');
+  const [activeRoom, setActiveRoom] = useState("");
   const [rooms, setRooms] = useState([]);
   const [devices, setDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from the database
+  // Load data from database
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
 
         // Get rooms
-        const roomsData = await jsonDB.getAllItems('rooms');
-        if (roomsData.length > 0) {
+        const roomsData = await getAllItems("rooms");
+        if (roomsData?.length > 0) {
           setRooms(roomsData);
-          // Set first room as active if no room is selected
           if (!activeRoom) {
             setActiveRoom(roomsData[0].id);
           }
         }
 
         // Get devices
-        const devicesData = await jsonDB.getAllItems('devices');
-        setDevices(devicesData);
+        const devicesData = await getAllItems("devices");
+        setDevices(devicesData || []);
 
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error("Error loading data:", error);
         setIsLoading(false);
       }
     };
@@ -38,33 +38,34 @@ const Dashboard = () => {
     loadData();
   }, [activeRoom]);
 
-  // Get devices for the active room
-  const filteredDevices = devices.filter(device => device.room === activeRoom);
+  // Get devices for active room
+  const filteredDevices = devices.filter(
+    (device) => device.room === activeRoom
+  );
 
   // Get active room data
-  const activeRoomData = rooms.find(room => room.id === activeRoom);
+  const activeRoomData = rooms.find((room) => room.id === activeRoom);
 
   // Toggle device state
   const toggleDevice = async (deviceId) => {
     try {
-      // Get the device
-      const device = await jsonDB.getItem('devices', deviceId);
+      const device = devices.find((d) => d.id === deviceId);
       if (!device) return;
 
-      // Toggle the status
-      const newStatus = device.status === 'on' ? 'off' : 'on';
+      const updatedDevice = {
+        ...device,
+        status: device.status === "on" ? "off" : "on",
+      };
 
-      // Update the device in the database
-      await jsonDB.updateDeviceStatus(deviceId, { status: newStatus });
-
-      // Update the UI
-      setDevices(prev => 
-        prev.map(d => 
-          d.id === deviceId ? { ...d, status: newStatus } : d
-        )
+      // Update UI
+      setDevices((prev) =>
+        prev.map((d) => (d.id === deviceId ? updatedDevice : d))
       );
+
+      // ✅ Use database abstraction
+      await save("devices", deviceId, updatedDevice);
     } catch (error) {
-      console.error('Error toggling device:', error);
+      console.error("Error toggling device:", error);
     }
   };
 
@@ -83,11 +84,12 @@ const Dashboard = () => {
 
   return (
     <div className="flex-1 p-4 md:p-6 overflow-auto">
-      <MainContent 
+      <MainContent
         activeRoom={activeRoom}
         devices={filteredDevices}
         toggleDevice={toggleDevice}
         roomData={activeRoomData}
+        onRoomChange={handleRoomChange}
       />
     </div>
   );
