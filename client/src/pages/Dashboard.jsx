@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import MainContent from "@/components/MainContent";
-import * as signalDB from "@/lib/signalDatabase";
+import { storage } from "@/db/unstorage";
 
 const Dashboard = () => {
   const [activeRoom, setActiveRoom] = useState("");
@@ -8,28 +8,24 @@ const Dashboard = () => {
   const [devices, setDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from the database
+  // Load data from unstorage
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
 
-        // Initialize database
-        await signalDB.initDatabase();
-
         // Get rooms
-        const roomsData = await signalDB.getAllItems("rooms");
-        if (roomsData.length > 0) {
+        const roomsData = await storage.getItem("rooms");
+        if (roomsData?.length > 0) {
           setRooms(roomsData);
-          // Set first room as active if no room is selected
           if (!activeRoom) {
             setActiveRoom(roomsData[0].id);
           }
         }
 
         // Get devices
-        const devicesData = await signalDB.getAllItems("devices");
-        setDevices(devicesData);
+        const devicesData = await storage.getItem("devices");
+        setDevices(devicesData || []);
 
         setIsLoading(false);
       } catch (error) {
@@ -41,7 +37,7 @@ const Dashboard = () => {
     loadData();
   }, [activeRoom]);
 
-  // Get devices for the active room
+  // Get devices for active room
   const filteredDevices = devices.filter(
     (device) => device.room === activeRoom
   );
@@ -52,14 +48,21 @@ const Dashboard = () => {
   // Toggle device state
   const toggleDevice = async (deviceId) => {
     try {
-      // Use SignalDB's toggleDevice function
-      const updatedDevice = await signalDB.toggleDevice(deviceId);
-      if (!updatedDevice) return;
+      const updatedDevices = devices.map((device) => {
+        if (device.id === deviceId) {
+          return {
+            ...device,
+            status: device.status === "on" ? "off" : "on",
+          };
+        }
+        return device;
+      });
 
-      // Update the UI
-      setDevices((prev) =>
-        prev.map((d) => (d.id === deviceId ? updatedDevice : d))
-      );
+      // Update UI
+      setDevices(updatedDevices);
+
+      // Save back to storage
+      await storage.setItem("devices", updatedDevices);
     } catch (error) {
       console.error("Error toggling device:", error);
     }
@@ -85,6 +88,7 @@ const Dashboard = () => {
         devices={filteredDevices}
         toggleDevice={toggleDevice}
         roomData={activeRoomData}
+        onRoomChange={handleRoomChange} // Optional prop
       />
     </div>
   );

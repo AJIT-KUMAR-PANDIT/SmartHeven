@@ -10,14 +10,14 @@ let driver;
 if (isCapacitor) {
   // Use Capacitor Preferences API
   driver = capacitorPreferencesDriver({
-    base: "myapp:",
+    base: "nakprc-smarthaven:",
   });
 } else {
   // Use IndexedDB for web
   driver = indexedDbDriver({
-    base: "myapp:",
-    dbName: "myapp-db",
-    storeName: "keyval-store",
+    base: "nakprc-smarthaven:",
+    dbName: "nakprc-smarthaven-db",
+    storeName: "nakprc-smarthaven-store",
   });
 }
 

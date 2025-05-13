@@ -15,7 +15,9 @@ import {
   MoreVertical,
 } from "lucide-react";
 import DeviceModal from "@/components/modals/DeviceModal";
-import * as signalDB from "@/lib/signalDatabase";
+
+// Import Unstorage directly
+import { storage } from "@/db/unstorage";
 
 // Device type to icon mapping
 const deviceIcons = {
@@ -34,16 +36,20 @@ const Devices = () => {
   const [selectedRoomFilter, setSelectedRoomFilter] = useState("all");
   const [rooms, setRooms] = useState([]);
 
-  // Load devices and rooms from database
+  // Load devices and rooms from unstorage
   useEffect(() => {
     const loadData = async () => {
       try {
-        await signalDB.initDatabase();
-        const devicesData = await signalDB.getAllItems("devices");
-        const roomsData = await signalDB.getAllItems("rooms");
+        setIsLoading(true);
 
+        // Get devices
+        const devicesData = await storage.getItem("devices");
         setDevices(devicesData || []);
+
+        // Get rooms
+        const roomsData = await storage.getItem("rooms");
         setRooms(roomsData || []);
+
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to load data:", error);
@@ -75,35 +81,20 @@ const Devices = () => {
   // Toggle device on/off
   const handleToggleDevice = async (deviceId) => {
     try {
-      await signalDB.initDatabase();
-      const updatedDevice = await signalDB.toggleDevice(deviceId);
+      const updatedDevices = devices.map((device) =>
+        device.id === deviceId
+          ? { ...device, status: device.status === "on" ? "off" : "on" }
+          : device
+      );
 
-      if (updatedDevice) {
-        setDevices(
-          devices.map((device) =>
-            device.id === deviceId ? updatedDevice : device
-          )
-        );
+      // Save back to storage
+      await storage.setItem("devices", updatedDevices);
+      setDevices(updatedDevices);
 
-        // Show success toast
-        toast({
-          title: "Device Updated",
-          description: `Device ${updatedDevice.name} has been ${
-            updatedDevice.status === "on" ? "turned on" : "turned off"
-          }.`,
-          duration: 2000,
-        });
-      }
+      // Show success toast
+      console.log("Device toggled successfully");
     } catch (error) {
       console.error("Failed to toggle device:", error);
-
-      // Show error toast
-      toast({
-        title: "Error",
-        description: "Failed to update device. Please try again.",
-        variant: "destructive",
-        duration: 3000,
-      });
     }
   };
 
@@ -111,9 +102,11 @@ const Devices = () => {
   const handleDeleteDevice = async (deviceId) => {
     if (window.confirm("Are you sure you want to delete this device?")) {
       try {
-        await signalDB.initDatabase();
-        await signalDB.deleteItem("devices", deviceId);
-        setDevices(devices.filter((device) => device.id !== deviceId));
+        const updatedDevices = devices.filter(
+          (device) => device.id !== deviceId
+        );
+        await storage.setItem("devices", updatedDevices);
+        setDevices(updatedDevices);
       } catch (error) {
         console.error("Failed to delete device:", error);
       }
@@ -123,11 +116,8 @@ const Devices = () => {
   // Handle modal close and refresh devices
   const handleModalClose = async () => {
     setIsModalOpen(false);
-
-    // Refresh devices list
     try {
-      await signalDB.initDatabase();
-      const devicesData = await signalDB.getAllItems("devices");
+      const devicesData = await storage.getItem("devices");
       setDevices(devicesData || []);
     } catch (error) {
       console.error("Failed to refresh devices:", error);
@@ -152,7 +142,6 @@ const Devices = () => {
           >
             Devices
           </motion.h1>
-
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -187,7 +176,6 @@ const Devices = () => {
           >
             All Devices
           </motion.button>
-
           {rooms.map((room) => (
             <motion.button
               key={room.id}
@@ -283,12 +271,10 @@ const Devices = () => {
                       </p>
                     </div>
                   </div>
-
                   <div className="relative group">
                     <button className="p-2 rounded-lg hover:bg-white/10">
                       <MoreVertical size={16} />
                     </button>
-
                     {/* Dropdown menu */}
                     <div className="absolute right-0 top-full mt-1 w-36 glass rounded-lg border border-white/10 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                       <button
@@ -322,7 +308,6 @@ const Devices = () => {
                       {device.connected ? "Online" : "Offline"}
                     </span>
                   </div>
-
                   {device.battery !== undefined && (
                     <div className="flex items-center text-xs">
                       <Battery size={12} className="mr-1" />

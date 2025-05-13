@@ -10,7 +10,7 @@ import {
   CloudLightning,
 } from "lucide-react";
 import SceneModal from "@/components/modals/SceneModal";
-import * as signalDB from "@/lib/signalDatabase";
+import { storage } from "@/db/unstorage";
 
 const Scenes = () => {
   const [scenes, setScenes] = useState([]);
@@ -18,13 +18,15 @@ const Scenes = () => {
   const [editingScene, setEditingScene] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load scenes from database
+  // Load scenes from unstorage
   useEffect(() => {
     const loadScenes = async () => {
       try {
-        await signalDB.initDatabase();
-        const scenesData = await signalDB.getAllItems("scenes");
+        setIsLoading(true);
+
+        const scenesData = await storage.getItem("scenes");
         setScenes(scenesData || []);
+
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to load scenes:", error);
@@ -50,22 +52,19 @@ const Scenes = () => {
   // Activate a scene
   const handleActivateScene = async (sceneId) => {
     try {
-      await signalDB.initDatabase();
-      await signalDB.save("scenes", sceneId, {
-        ...scenes.find((scene) => scene.id === sceneId),
-        isActive: true,
-        lastTriggered: Date.now(),
+      const updatedScenes = scenes.map((scene) => {
+        if (scene.id === sceneId) {
+          return {
+            ...scene,
+            isActive: true,
+            lastTriggered: Date.now(),
+          };
+        }
+        return scene;
       });
 
-      // Update scene in the UI
-      setScenes(
-        scenes.map((scene) => {
-          if (scene.id === sceneId) {
-            return { ...scene, isActive: true, lastTriggered: Date.now() };
-          }
-          return scene;
-        })
-      );
+      await storage.setItem("scenes", updatedScenes);
+      setScenes(updatedScenes);
     } catch (error) {
       console.error("Failed to activate scene:", error);
     }
@@ -75,9 +74,9 @@ const Scenes = () => {
   const handleDeleteScene = async (sceneId) => {
     if (window.confirm("Are you sure you want to delete this scene?")) {
       try {
-        await signalDB.initDatabase();
-        await signalDB.deleteItem("scenes", sceneId);
-        setScenes(scenes.filter((scene) => scene.id !== sceneId));
+        const updatedScenes = scenes.filter((scene) => scene.id !== sceneId);
+        await storage.setItem("scenes", updatedScenes);
+        setScenes(updatedScenes);
       } catch (error) {
         console.error("Failed to delete scene:", error);
       }
@@ -87,11 +86,8 @@ const Scenes = () => {
   // Handle modal close and refresh scenes
   const handleModalClose = async () => {
     setIsModalOpen(false);
-
-    // Refresh scenes list
     try {
-      await signalDB.initDatabase();
-      const scenesData = await signalDB.getAllItems("scenes");
+      const scenesData = await storage.getItem("scenes");
       setScenes(scenesData || []);
     } catch (error) {
       console.error("Failed to refresh scenes:", error);
@@ -110,7 +106,6 @@ const Scenes = () => {
           >
             Scenes
           </motion.h1>
-
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -197,12 +192,10 @@ const Scenes = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="relative group">
                   <button className="p-2 rounded-lg hover:bg-white/10">
                     <MoreVertical size={16} />
                   </button>
-
                   {/* Dropdown menu */}
                   <div className="absolute right-0 top-full mt-1 w-36 glass rounded-lg border border-white/10 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                     <button
@@ -239,7 +232,7 @@ const Scenes = () => {
                 </div>
               )}
 
-              {/* Play button */}
+              {/* Run button */}
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

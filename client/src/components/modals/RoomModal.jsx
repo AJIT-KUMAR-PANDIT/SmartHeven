@@ -13,7 +13,9 @@ import {
   Save,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import * as signalDB from "@/lib/signalDatabase";
+
+// Import Unstorage directly
+import { storage } from "@/db/unstorage";
 
 const roomTypes = [
   { icon: Sofa, name: "Living Room", type: "living" },
@@ -36,13 +38,13 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
   useEffect(() => {
     if (isOpen) {
       if (editRoom) {
-        setRoomName(editRoom.name);
+        setRoomName(editRoom.name || "");
         setSelectedType(
           roomTypes.find((t) => t.type === editRoom.type) || roomTypes[0]
         );
         setFloor(editRoom.floor || 1);
       } else {
-        // Reset form for new room
+        // Reset for new room
         setRoomName("");
         setSelectedType(roomTypes[0]);
         setFloor(1);
@@ -56,9 +58,11 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
     try {
       setIsLoading(true);
 
-      // Prepare room data
+      const roomId = editRoom?.id || crypto.randomUUID();
+
       const roomData = {
-        id: editRoom?.id || crypto.randomUUID(),
+        _id: roomId,
+        id: roomId,
         name: roomName.trim(),
         type: selectedType.type,
         icon: selectedType.type,
@@ -66,9 +70,19 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         devices: editRoom?.devices || [],
       };
 
-      // Save to database
-      await signalDB.initDatabase();
-      await signalDB.save("rooms", roomData.id, roomData);
+      // Get existing rooms
+      let rooms = (await storage.getItem("rooms")) || [];
+
+      // Update or add new room
+      const index = rooms.findIndex((r) => r._id === roomId);
+      if (index > -1) {
+        rooms[index] = roomData;
+      } else {
+        rooms.push(roomData);
+      }
+
+      // Save back to storage
+      await storage.setItem("rooms", rooms);
 
       setIsLoading(false);
       onClose();

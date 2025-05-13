@@ -13,7 +13,9 @@ import {
   PlusCircle,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import * as signalDB from "@/lib/signalDatabase";
+
+// Import unstorage directly
+import { storage } from "@/db/unstorage";
 
 const deviceTypes = [
   { icon: Lightbulb, name: "Light", category: "lighting" },
@@ -38,12 +40,12 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     if (isOpen) {
       const loadData = async () => {
         try {
-          await signalDB.initDatabase();
-          const roomsData = await signalDB.getAllItems("rooms");
+          // Fetch rooms from storage
+          const roomsData = await storage.getItem("rooms");
           setRooms(roomsData || []);
 
           if (roomsData?.length > 0 && !selectedRoom) {
-            setSelectedRoom(roomsData[0].id);
+            setSelectedRoom(roomsData[0]._id);
           }
 
           // If editing, populate form
@@ -61,7 +63,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             setDeviceName("");
             setSelectedType(deviceTypes[0]);
             if (roomsData?.length > 0) {
-              setSelectedRoom(roomsData[0].id);
+              setSelectedRoom(roomsData[0]._id);
             }
           }
         } catch (error) {
@@ -79,9 +81,12 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     try {
       setIsLoading(true);
 
+      const deviceId = editDevice?.id || Date.now().toString(); // fallback ID
+
       // Prepare device data
       const deviceData = {
-        id: editDevice?.id || crypto.randomUUID(),
+        _id: deviceId,
+        id: deviceId,
         name: deviceName.trim(),
         type: selectedType.category,
         room: selectedRoom,
@@ -94,9 +99,19 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
         settings: {},
       };
 
-      // Save to database
-      await signalDB.initDatabase();
-      await signalDB.save("devices", deviceData.id, deviceData);
+      // Get existing devices
+      let devices = (await storage.getItem("devices")) || [];
+
+      // Update or add new
+      const index = devices.findIndex((d) => d._id === deviceId);
+      if (index > -1) {
+        devices[index] = deviceData;
+      } else {
+        devices.push(deviceData);
+      }
+
+      // Save back to storage
+      await storage.setItem("devices", devices);
 
       setIsLoading(false);
       onClose();
@@ -168,20 +183,28 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
             <div className="flex flex-wrap gap-2">
               {rooms.map((room) => (
                 <motion.button
-                  key={room.id}
+                  key={room._id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedRoom(room.id)}
+                  onClick={() => setSelectedRoom(room._id)}
                   className={`flex items-center px-3 py-2 rounded-lg ${
-                    selectedRoom === room.id
+                    selectedRoom === room._id
                       ? "bg-primary/20 border border-primary/50"
                       : "bg-white/5 border border-white/10"
                   }`}
                 >
                   <div className="w-6 h-6 rounded-md bg-black/20 flex items-center justify-center mr-2">
-                    <Home
-                      size={14}
-                      className={selectedRoom === room.id ? "text-primary" : ""}
-                    />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-4 h-4 opacity-70"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7zM14 8v6H6V8h8z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
                   <span className="text-sm">{room.name}</span>
                 </motion.button>

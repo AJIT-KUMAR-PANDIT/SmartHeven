@@ -15,7 +15,9 @@ import {
   Save,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import * as signalDB from "@/lib/signalDatabase";
+
+// Import Unstorage directly
+import { storage } from "@/db/unstorage";
 
 const icons = [
   { icon: Zap, name: "Zap" },
@@ -36,14 +38,13 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
   const [availableDevices, setAvailableDevices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get all devices when modal opens
+  // Load devices when modal opens
   useEffect(() => {
     if (isOpen) {
       const loadDevices = async () => {
         try {
-          // Initialize the database if not already initialized
-          await signalDB.initDatabase();
-          const devices = await signalDB.getAllItems("devices");
+          // Get all devices from unstorage
+          const devices = await storage.getItem("devices");
           setAvailableDevices(devices || []);
 
           // If editing, populate form
@@ -53,7 +54,6 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
               icons.find((i) => i.name === editScene.icon) || icons[0]
             );
 
-            // Find devices included in scene actions
             if (editScene.actions && Array.isArray(editScene.actions)) {
               const sceneDevices = editScene.actions
                 .map((action) => ({
@@ -61,11 +61,10 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                   action: action.changes,
                 }))
                 .filter(Boolean);
-
               setSelectedDevices(sceneDevices);
             }
           } else {
-            // Reset form for new scene
+            // Reset for new scene
             setSceneName("");
             setSelectedIcon(icons[0]);
             setSelectedDevices([]);
@@ -80,9 +79,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
   }, [isOpen, editScene]);
 
   const handleAddDevice = (device) => {
-    // Check if device already selected
     if (selectedDevices.some((d) => d.id === device.id)) return;
-
     setSelectedDevices([
       ...selectedDevices,
       {
@@ -121,9 +118,11 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
     try {
       setIsLoading(true);
 
-      // Prepare the scene object
+      const sceneId = editScene?.id || crypto.randomUUID();
+
       const sceneData = {
-        id: editScene?.id || crypto.randomUUID(),
+        _id: sceneId,
+        id: sceneId,
         name: sceneName.trim(),
         icon: selectedIcon.name,
         actions: selectedDevices.map((device) => ({
@@ -134,9 +133,19 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
         lastTriggered: null,
       };
 
-      // Save to database
-      await signalDB.initDatabase();
-      await signalDB.save("scenes", sceneData.id, sceneData);
+      // Get existing scenes
+      let scenes = (await storage.getItem("scenes")) || [];
+
+      // Update or add new scene
+      const index = scenes.findIndex((s) => s._id === sceneId);
+      if (index > -1) {
+        scenes[index] = sceneData;
+      } else {
+        scenes.push(sceneData);
+      }
+
+      // Save back to storage
+      await storage.setItem("scenes", scenes);
 
       setIsLoading(false);
       onClose();
@@ -214,18 +223,14 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                   className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10"
                 >
                   <div className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center mr-3`}
-                    >
-                      {/* Device icon would go here */}
-                      <Smartphone size={16} />
+                    <div className="w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center mr-3">
+                      <Zap size={16} />
                     </div>
                     <div>
                       <div className="text-sm font-medium">{device.name}</div>
                       <div className="text-xs opacity-60">{device.type}</div>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-2">
                     <select
                       value={device.action.status || "toggle"}
@@ -242,7 +247,6 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                       <option value="off">Turn OFF</option>
                       <option value="toggle">Toggle</option>
                     </select>
-
                     <button
                       onClick={() => handleRemoveDevice(device.id)}
                       className="p-1 rounded-lg hover:bg-white/10"
@@ -287,7 +291,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
                       }`}
                     >
                       <div className="w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center mr-2">
-                        <Smartphone size={16} />
+                        <Zap size={16} />
                       </div>
                       <div>
                         <div className="text-sm font-medium">{device.name}</div>
@@ -313,7 +317,6 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
           >
             Cancel
           </motion.button>
-
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleSubmit}
