@@ -1,7 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster.tsx";
+import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "@/lib/queryClient";
 import Router from "./Router";
 import MobileNav from "@/components/MobileNav";
@@ -18,7 +18,7 @@ function App() {
 
   // Initialize database and load data
   useEffect(() => {
-    const loadData = async () => {
+    async function loadDataFromDB() {
       try {
         await initDatabase();
         const loadedRooms = await getAllItems("rooms");
@@ -31,9 +31,23 @@ function App() {
       } catch (err) {
         console.error("Error loading data:", err);
       }
-    };
-    loadData();
+    }
+
+    loadDataFromDB();
   }, []);
+
+  return null;
+}
+
+function AppContent() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { rooms, activeRoom, setActiveRoom } = useAppStore(); // assuming you added these in store
+
+  useEffect(() => {
+    if (rooms.length > 0 && !activeRoom) {
+      setActiveRoom(rooms[0].id);
+    }
+  }, [rooms, activeRoom, setActiveRoom]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -53,7 +67,7 @@ function App() {
                 activeRoom={activeRoom}
                 onRoomChange={setActiveRoom}
               />
-              <main className="md:mt-14 lg:mt-14 flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
+              <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
                 <Router />
               </main>
             </div>
@@ -65,5 +79,3 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-export default App;

@@ -1,12 +1,14 @@
 
 import { Switch, Route } from "wouter";
-import Dashboard from "./pages/Dashboard";
-import Devices from "./pages/Devices";
-import Scenes from "./pages/Scenes";
-import Automations from "./pages/Automations";
-import Analytics from "./pages/Analytics";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/not-found";
+import { lazyImport } from "./LazyLoader";
+
+const Dashboard = lazyImport(() => import("./pages/Dashboard"));
+const Devices = lazyImport(() => import("./pages/Devices"));
+const Scenes = lazyImport(() => import("./pages/Scenes"));
+const Automations = lazyImport(() => import("./pages/Automations"));
+const Analytics = lazyImport(() => import("./pages/Analytics"));
+const Settings = lazyImport(() => import("./pages/Settings"));
+const NotFound = lazyImport(() => import("./pages/not-found"));
 
 export default function Router() {
   return (
