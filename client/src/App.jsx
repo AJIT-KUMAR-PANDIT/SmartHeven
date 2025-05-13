@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,29 +8,42 @@ import Router from "./Router";
 import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
-import { useState, useEffect } from "react";
-import * as jsonDB from "@/lib/database";
+import { AppStoreProvider, useAppStore } from "@/db/store";
+import { refreshSignals } from "@/db/refreshSignals";
+import { initDatabase } from "@/db/initDatabase";
 
-function App() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [rooms, setRooms] = useState([]);
-  const [devices, setDevices] = useState([]);
-  const [activeRoom, setActiveRoom] = useState(null);
+// ✅ Component to initialize data using the store
+function AppInitializer() {
+  const {
+    setDevices,
+    setRooms,
+    setScenes,
+    setAutomations,
+    setHistory,
+    setSettings,
+  } = useAppStore();
 
-  // Initialize database and load data
   useEffect(() => {
     async function loadDataFromDB() {
       try {
-        await initDatabase();
-        const loadedRooms = await getAllItems("rooms");
-        const loadedDevices = await getAllItems("devices");
-        setRooms(loadedRooms);
-        setDevices(loadedDevices);
-        if (loadedRooms.length > 0) {
-          setActiveRoom(loadedRooms[0].id);
+        const db = await initDatabase();
+
+        const sections = [
+          ["devices", setDevices],
+          ["rooms", setRooms],
+          ["scenes", setScenes],
+          ["automations", setAutomations],
+          ["history", setHistory],
+          ["settings", setSettings],
+        ];
+
+        for (const [key, setter] of sections) {
+          // Optionally fetch from DB or signal update
+          const data = await refreshSignals(db, key); // Make sure this uses the db
+          if (data) setter(data);
         }
       } catch (err) {
-        console.error("Error loading data:", err);
+        console.error("Error initializing data:", err);
       }
     }
 
@@ -50,32 +64,44 @@ function AppContent() {
   }, [rooms, activeRoom, setActiveRoom]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
-        <TooltipProvider>
-          <div className="min-h-screen bg-background">
-            <script
-              authed="location.reload()"
-              src="https://auth.util.repl.co/script.js"
-            ></script>
-            <TopNav />
-            <div className="flex h-[calc(100vh-4rem)]">
-              <Sidebar
-                isMobileOpen={isMobileMenuOpen}
-                setIsMobileOpen={setIsMobileMenuOpen}
-                rooms={rooms}
-                activeRoom={activeRoom}
-                onRoomChange={setActiveRoom}
+    <>
+      <TopNav />
+      <div className="flex h-[calc(100vh-4rem)]">
+        <Sidebar
+          isMobileOpen={isMobileMenuOpen}
+          setIsMobileOpen={setIsMobileMenuOpen}
+          rooms={rooms}
+          activeRoom={activeRoom}
+          onRoomChange={setActiveRoom}
+        />
+        <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
+          <Router />
+        </main>
+      </div>
+      <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
+      <Toaster />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <AppStoreProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
+          <TooltipProvider>
+            {/* ✅ Context-aware initialization */}
+            <AppInitializer />
+            <div className="min-h-screen bg-background">
+              <script
+                authed="location.reload()"
+                src="https://auth.util.repl.co/script.js "
               />
-              <main className="flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
-                <Router />
-              </main>
+              <AppContent />
             </div>
-            <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </AppStoreProvider>
   );
 }
