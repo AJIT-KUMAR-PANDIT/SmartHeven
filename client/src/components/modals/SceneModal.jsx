@@ -17,6 +17,10 @@ import {
 import Modal from "@/components/ui/modal";
 import { SceneDB, DeviceDB } from "@/database_lowdb/db";
 
+// Initialize databases
+SceneDB.init();
+DeviceDB.init();
+
 const icons = [
   { icon: Zap, name: "Zap" },
   { icon: Home, name: "Home" },
@@ -41,8 +45,7 @@ const SceneModal = ({ isOpen, onClose, editScene = null }) => {
     if (isOpen) {
       const loadDevices = async () => {
         try {
-          // Initialize the database if not already initialized
-          await DeviceDB.init();
+          // Get all devices
           const devices = await DeviceDB.getAllItems("devices");
           setAvailableDevices(devices || []);
 

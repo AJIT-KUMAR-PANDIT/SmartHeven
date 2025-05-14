@@ -15,6 +15,9 @@ import {
 import Modal from "@/components/ui/modal";
 import { RoomDB } from "@/database_lowdb/db";
 
+// Initialize database
+RoomDB.init();
+
 const roomTypes = [
   { icon: Sofa, name: "Living Room", type: "living" },
   { icon: UtensilsCrossed, name: "Kitchen", type: "kitchen" },
@@ -49,10 +52,6 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
       }
     }
   }, [isOpen, editRoom]);
-
-  useEffect(() => {
-    RoomDB.init();
-  }, []);
 
   const handleSubmit = async () => {
     if (!roomName.trim()) return;

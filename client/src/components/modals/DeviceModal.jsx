@@ -13,8 +13,12 @@ import {
   PlusCircle,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import { DeviceDB } from "@/database_lowdb/db";
+import { DeviceDB, RoomDB } from "@/database_lowdb/db";
 import { isProduction } from "@/utils/environment";
+
+// Initialize databases
+DeviceDB.init();
+RoomDB.init();
 
 const deviceTypes = [
   { icon: Lightbulb, name: "Light", category: "lighting" },
@@ -39,9 +43,7 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
     if (isOpen) {
       const loadData = async () => {
         try {
-          // Replace jsonDB.init() with DeviceDB.init()
-          await DeviceDB.init();
-          const roomsData = await DeviceDB.getAllItems("rooms");
+          const roomsData = await RoomDB.getAllItems();
           setRooms(roomsData || []);
 
           if (roomsData?.length > 0 && !selectedRoom) {
