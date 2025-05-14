@@ -11,14 +11,11 @@ import {
   Tv,
   Save,
   PlusCircle,
+  Home,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { DeviceDB, RoomDB } from "@/database_lowdb/db";
 import { isProduction } from "@/utils/environment";
-
-// Initialize databases
-DeviceDB.init();
-RoomDB.init();
 
 const deviceTypes = [
   { icon: Lightbulb, name: "Light", category: "lighting" },
@@ -44,7 +41,8 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
 
     const loadData = async () => {
       try {
-        const roomsData = await RoomDB.getAllItems();
+        await RoomDB.init();
+        const roomsData = await RoomDB.getAllItems("rooms");
         setRooms(roomsData || []);
 
         if (roomsData?.length > 0 && !selectedRoom) {

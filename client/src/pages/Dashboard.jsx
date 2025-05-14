@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import MainContent from "@/components/MainContent";
-import * as jsonDB from "@/lib/database";
+import { DeviceDB, RoomDB } from "@/database_lowdb/db";
 
 const Dashboard = () => {
   const [activeRoom, setActiveRoom] = useState("");
@@ -14,9 +14,11 @@ const Dashboard = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        await RoomDB.init();
+        await DeviceDB.init();
 
         // Get rooms
-        const roomsData = await jsonDB.getAllItems("rooms");
+        const roomsData = await RoomDB.getAllItems();
         if (roomsData.length > 0) {
           setRooms(roomsData);
           if (!activeRoom) {
@@ -25,7 +27,7 @@ const Dashboard = () => {
         }
 
         // Get devices
-        const devicesData = await jsonDB.getAllItems("devices");
+        const devicesData = await DeviceDB.getAllItems();
         setDevices(devicesData);
 
         // Fetch room icons
@@ -56,11 +58,11 @@ const Dashboard = () => {
   // Toggle device state
   const toggleDevice = async (deviceId) => {
     try {
-      const device = await jsonDB.getItem("devices", deviceId);
+      const device = await DeviceDB.getItem(deviceId);
       if (!device) return;
 
       const newStatus = device.status === "on" ? "off" : "on";
-      await jsonDB.updateDeviceStatus(deviceId, { status: newStatus });
+      await DeviceDB.updateItem(deviceId, { status: newStatus });
 
       setDevices((prev) =>
         prev.map((d) => (d.id === deviceId ? { ...d, status: newStatus } : d))
