@@ -9,6 +9,7 @@ import {
   Trash, 
   CloudLightning
 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import SceneModal from '@/components/modals/SceneModal';
 import { SceneDB, DeviceDB } from '@/database_lowdb/db';
 
@@ -21,27 +22,53 @@ const Scenes = () => {
   // Load scenes from database and set up real-time updates
   useEffect(() => {
     let unsubscribe;
+    let isMounted = true;
     
     const loadScenes = async () => {
       try {
         await SceneDB.init();
         const scenesData = await SceneDB.getAllItems('scenes');
-        setScenes(scenesData || []);
-        setIsLoading(false);
+        if (isMounted) {
+          setScenes(scenesData || []);
+          setIsLoading(false);
+        }
         
-        // Subscribe to real-time updates
+        // Subscribe to real-time updates with error handling
         unsubscribe = SceneDB.subscribe((updatedScenes) => {
-          setScenes(updatedScenes);
+          if (isMounted) {
+            setScenes(updatedScenes);
+            
+            // Show success toast when new scene is added
+            if (updatedScenes.length > scenes.length) {
+              toast.success({
+                title: 'Scene added',
+                description: 'Your new scene is now available'
+              });
+            }
+          }
+        }, (error) => {
+          console.error('Database subscription error:', error);
+          toast.error({
+            title: 'Connection error',
+            description: 'Could not connect to real-time updates'
+          });
         });
       } catch (error) {
         console.error('Failed to load scenes:', error);
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+          toast.error({
+            title: 'Failed to load',
+            description: 'Could not load scenes from database'
+          });
+        }
       }
     };
     
     loadScenes();
     
     return () => {
+      isMounted = false;
       if (unsubscribe) unsubscribe();
     };
   }, []);
