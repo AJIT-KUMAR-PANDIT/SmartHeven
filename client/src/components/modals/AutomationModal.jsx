@@ -133,7 +133,7 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
 
       // Save to database
       await AutomationDB.init();
-      await AutomationDB.save("automations", automationData.id, automationData);
+      await AutomationDB.save(automationData.id, automationData);
 
       toast({
         title: `Automation ${editAutomation ? "Updated" : "Created"}`,
