@@ -5,3 +5,9 @@ export const isProduction = () => {
 export const isDevelopment = () => {
   return !isProduction();
 };
+
+export const disableRxDBDevMode = () => {
+  if (isProduction()) {
+    window.disableRxDBDevMode?.();
+  }
+};

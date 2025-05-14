@@ -50,6 +50,10 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
     }
   }, [isOpen, editRoom]);
 
+  useEffect(() => {
+    RoomDB.init();
+  }, []);
+
   const handleSubmit = async () => {
     if (!roomName.trim()) return;
 
@@ -68,7 +72,8 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
 
       // Save to database
       await RoomDB.init();
-      await RoomDB.save(roomData.id, roomData);
+      const newId = editRoom?.id || RoomDB.generateId();
+      await RoomDB.save(newId, { ...roomData, id: newId });
 
       setIsLoading(false);
       onClose();
