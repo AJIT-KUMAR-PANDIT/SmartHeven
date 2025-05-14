@@ -45,6 +45,21 @@ const Devices = () => {
         setDevices(devicesData || []);
         setRooms(roomsData || []);
         setIsLoading(false);
+
+        // Subscribe to database changes
+        const unsubscribeDevices = DeviceDB.subscribe((updatedDevices) => {
+          setDevices(updatedDevices);
+        });
+
+        const unsubscribeRooms = RoomDB.subscribe((updatedRooms) => {
+          setRooms(updatedRooms);
+        });
+
+        // Cleanup subscriptions
+        return () => {
+          unsubscribeDevices();
+          unsubscribeRooms();
+        };
       } catch (error) {
         console.error("Failed to load data:", error);
         setIsLoading(false);
@@ -120,8 +135,8 @@ const Devices = () => {
   const handleDeleteDevice = async (deviceId) => {
     if (window.confirm("Are you sure you want to delete this device?")) {
       try {
-        await jsonDB.init();
-        await jsonDB.removeItem("devices", deviceId);
+        await DeviceDB.init();
+        await DeviceDB.removeItem("devices", deviceId);
         setDevices(devices.filter((device) => device.id !== deviceId));
       } catch (error) {
         console.error("Failed to delete device:", error);
@@ -135,8 +150,8 @@ const Devices = () => {
 
     // Refresh devices list
     try {
-      await jsonDB.init();
-      const devicesData = await jsonDB.getAllItems("devices");
+      await DeviceDB.init();
+      const devicesData = await DeviceDB.getAllItems("devices");
       setDevices(devicesData || []);
     } catch (error) {
       console.error("Failed to refresh devices:", error);
