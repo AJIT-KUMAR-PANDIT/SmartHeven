@@ -44,7 +44,8 @@ export class CapacitorAdapter {
 export class IndexedDBAdapter {
   constructor(dbName = "lowdb") {
     this.adapter = new LocalStorage(dbName);
-    this.db = new Low(this.adapter, {});
+    this.db = new Low(this.adapter, { rooms: [], devices: [] });
+    this.db.data ||= { rooms: [], devices: [] };
   }
 
   async read() {
