@@ -12,11 +12,13 @@ const SplashWelcome = () => {
       return "Good Morning";
     } else if (hour >= 12 && hour < 17) {
       return "Good Afternoon";
-    } else if (hour >= 17 && hour < 22) {
-      return "Good Evening";
     } else {
-      return "Good Night";
+      //if (hour >= 17 && hour < 22) {
+      return "Good Evening";
     }
+    // else {
+    //   return "Good Night";
+    // }
   };
 
   // Format time as HH:MM AM/PM
