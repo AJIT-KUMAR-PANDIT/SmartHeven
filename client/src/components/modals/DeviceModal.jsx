@@ -40,41 +40,46 @@ const DeviceModal = ({ isOpen, onClose, editDevice = null }) => {
 
   // Load rooms and populate form if editing
   useEffect(() => {
-    if (isOpen) {
-      const loadData = async () => {
-        try {
-          const roomsData = await RoomDB.getAllItems();
-          setRooms(roomsData || []);
+    let unsubscribe;
 
-          if (roomsData?.length > 0 && !selectedRoom) {
-            setSelectedRoom(roomsData[0].id);
-          }
+    const loadData = async () => {
+      try {
+        const roomsData = await RoomDB.getAllItems();
+        setRooms(roomsData || []);
 
-          // If editing, populate form
-          if (editDevice) {
-            setDeviceName(editDevice.name);
-            setSelectedType(
-              deviceTypes.find((t) => t.category === editDevice.type) ||
-                deviceTypes[0]
-            );
-            if (editDevice.room) {
-              setSelectedRoom(editDevice.room);
-            }
-          } else {
-            // Reset form for new device
-            setDeviceName("");
-            setSelectedType(deviceTypes[0]);
-            if (roomsData?.length > 0) {
-              setSelectedRoom(roomsData[0].id);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to load data:", error);
+        if (roomsData?.length > 0 && !selectedRoom) {
+          setSelectedRoom(roomsData[0].id);
         }
-      };
 
+        if (editDevice) {
+          setDeviceName(editDevice.name);
+          setSelectedType(
+            deviceTypes.find((t) => t.category === editDevice.type) ||
+              deviceTypes[0]
+          );
+          if (editDevice.room) setSelectedRoom(editDevice.room);
+        } else {
+          setDeviceName("");
+          setSelectedType(deviceTypes[0]);
+          if (roomsData?.length > 0) setSelectedRoom(roomsData[0].id);
+        }
+
+        // Add real-time subscription
+        unsubscribe = RoomDB.subscribe((updatedRooms) => {
+          setRooms(updatedRooms);
+        });
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      }
+    };
+
+    if (isOpen) {
       loadData();
     }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [isOpen, editDevice]);
 
   const handleSubmit = async () => {
