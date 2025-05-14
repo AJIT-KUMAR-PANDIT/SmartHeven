@@ -34,6 +34,7 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [devices, setDevices] = useState([]);
   const [selectedDevices, setSelectedDevices] = useState([]);
+  const [deviceActions, setDeviceActions] = useState({});
 
   // Load devices and populate form if editing
   useEffect(() => {
@@ -55,6 +56,7 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
           setDays(editAutomation.days || []);
           setIsEnabled(editAutomation.isEnabled || false);
           setSelectedDevices(editAutomation.devices || []);
+          setDeviceActions(editAutomation.deviceActions || {});
         } else {
           // Reset form for new automation
           setName("");
@@ -94,6 +96,7 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
         days,
         isEnabled,
         devices: selectedDevices,
+        deviceActions: deviceActions,
         createdAt: editAutomation?.createdAt || Date.now(),
         updatedAt: Date.now(),
       };
@@ -238,8 +241,17 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
                     setSelectedDevices(
                       selectedDevices.filter((id) => id !== device.id)
                     );
+                    setDeviceActions((prev) => {
+                      const newActions = { ...prev };
+                      delete newActions[device.id];
+                      return newActions;
+                    });
                   } else {
                     setSelectedDevices([...selectedDevices, device.id]);
+                    setDeviceActions((prev) => ({
+                      ...prev,
+                      [device.id]: { status: "toggle" },
+                    }));
                   }
                 }}
                 className={`flex items-center p-3 rounded-lg ${

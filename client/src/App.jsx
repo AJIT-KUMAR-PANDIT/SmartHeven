@@ -8,6 +8,7 @@ import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { RoomDB, DeviceDB } from "@/database_lowdb/db";
+import SplashWelcome from "./components/SplashWelcome";
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -55,6 +56,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
+        <SplashWelcome />
         <div className="min-h-screen bg-background">
           <script
             authed="location.reload()"
