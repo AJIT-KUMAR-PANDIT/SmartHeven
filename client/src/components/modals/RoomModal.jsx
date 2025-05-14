@@ -64,7 +64,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         id: editRoom?.id || RoomDB.generateId(),
         name: roomName.trim(),
         type: selectedType.type,
-        icon: selectedType.icon,
+        icon: selectedType.name, // Store icon name instead of component
         floor: parseInt(floor),
         devices: editRoom?.devices || [],
       };
