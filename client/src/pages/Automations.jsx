@@ -12,23 +12,22 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
-// Mock database service for the component
-const AutomationDB = {
-  init: async () => Promise.resolve(),
-  getAllItems: async () => Promise.resolve(mockAutomations),
-  subscribe: (callback) => {
-    callback(mockAutomations);
-    return () => {}; // Unsubscribe function
-  },
+// Icon mapping for dynamic icon rendering
+const iconMap = {
+  Clock,
+  Calendar,
+  MapPin,
+  ThermometerSun,
+  Sun,
+  PowerOff,
+  Layers,
+  Plus,
 };
 
-const jsonDB = {
-  init: async () => Promise.resolve(),
-  saveItem: async () => Promise.resolve(),
-};
+import { AutomationDB } from "@/database_lowdb/db";
 
-// Mock data outside of the component
-const mockAutomations = [
+// Sample automation data structure for reference
+const automationTemplate = [
   {
     id: 1,
     name: "Morning Routine",
@@ -106,7 +105,8 @@ const AutomationCard = ({ automation, isEnabled, onToggle, onEdit }) => {
           className={`w-12 h-12 rounded-lg flex items-center justify-center text-${automation.colorClass}`}
           style={{ backgroundColor: `${automation.color}20` }}
         >
-          <automation.icon size={24} />
+          {iconMap[automation.icon] &&
+            React.createElement(iconMap[automation.icon], { size: 24 })}
         </div>
         <div className="flex items-center">
           <span
@@ -237,26 +237,25 @@ const Automations = () => {
   const toggleAutomation = async (automationId) => {
     try {
       const newState = !enabledAutomations[automationId];
+      const automation = automationsData.find((a) => a.id === automationId);
 
-      await jsonDB.init();
-      await jsonDB.saveItem("automations", {
-        id: automationId,
-        isEnabled: newState,
-        lastUpdated: Date.now(),
-      });
+      if (automation) {
+        const updatedAutomation = { ...automation, isEnabled: newState };
+        await AutomationDB.save(automationId, updatedAutomation);
 
-      setEnabledAutomations((prev) => ({
-        ...prev,
-        [automationId]: newState,
-      }));
+        setEnabledAutomations((prev) => ({
+          ...prev,
+          [automationId]: newState,
+        }));
 
-      toast({
-        title: `Automation ${newState ? "Enabled" : "Disabled"}`,
-        description: `Successfully ${
-          newState ? "enabled" : "disabled"
-        } the automation.`,
-        duration: 2000,
-      });
+        toast({
+          title: `Automation ${newState ? "Enabled" : "Disabled"}`,
+          description: `Successfully ${
+            newState ? "enabled" : "disabled"
+          } the automation.`,
+          duration: 2000,
+        });
+      }
     } catch (error) {
       console.error("Failed to toggle automation:", error);
       toast({

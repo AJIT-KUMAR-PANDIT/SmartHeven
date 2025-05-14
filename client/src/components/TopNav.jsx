@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { Bell, Search } from 'lucide-react';
+import { useState } from 'react';
+import SearchModal from './SearchModal';
 
 const TopNav = () => {
   const [location] = useLocation();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   // Get the current page title based on the location
   const getPageTitle = () => {
@@ -57,9 +60,11 @@ const TopNav = () => {
         <motion.button
           whileTap={{ scale: 0.92 }}
           className="w-9 h-9 rounded-full flex items-center justify-center glass"
+          onClick={() => setIsSearchOpen(true)}
         >
           <Search size={18} />
         </motion.button>
+        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         
         <motion.button
           whileTap={{ scale: 0.92 }}
