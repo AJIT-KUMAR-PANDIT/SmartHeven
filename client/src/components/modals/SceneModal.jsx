@@ -13,6 +13,7 @@ import {
   Plus,
   Trash2,
   Save,
+  Smartphone,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { SceneDB, DeviceDB } from "@/database_lowdb/db";

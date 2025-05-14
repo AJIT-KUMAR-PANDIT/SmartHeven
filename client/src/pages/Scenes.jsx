@@ -10,7 +10,7 @@ import {
   CloudLightning
 } from 'lucide-react';
 import SceneModal from '@/components/modals/SceneModal';
-import * as jsonDB from '@/lib/database';
+import { SceneDB, DeviceDB } from '@/database_lowdb/db';
 
 const Scenes = () => {
   const [scenes, setScenes] = useState([]);
@@ -18,14 +18,21 @@ const Scenes = () => {
   const [editingScene, setEditingScene] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Load scenes from database
+  // Load scenes from database and set up real-time updates
   useEffect(() => {
+    let unsubscribe;
+    
     const loadScenes = async () => {
       try {
-        await jsonDB.init();
-        const scenesData = await jsonDB.getAllItems('scenes');
+        await SceneDB.init();
+        const scenesData = await SceneDB.getAllItems('scenes');
         setScenes(scenesData || []);
         setIsLoading(false);
+        
+        // Subscribe to real-time updates
+        unsubscribe = SceneDB.subscribe((updatedScenes) => {
+          setScenes(updatedScenes);
+        });
       } catch (error) {
         console.error('Failed to load scenes:', error);
         setIsLoading(false);
@@ -33,6 +40,10 @@ const Scenes = () => {
     };
     
     loadScenes();
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
   
   // Open modal for editing a scene
@@ -50,8 +61,7 @@ const Scenes = () => {
   // Activate a scene
   const handleActivateScene = async (sceneId) => {
     try {
-      await jsonDB.init();
-      await jsonDB.activateScene(sceneId);
+      await SceneDB.activateScene(sceneId);
       
       // Update scene in the UI
       setScenes(scenes.map(scene => {
@@ -69,8 +79,7 @@ const Scenes = () => {
   const handleDeleteScene = async (sceneId) => {
     if (window.confirm('Are you sure you want to delete this scene?')) {
       try {
-        await jsonDB.init();
-        await jsonDB.removeItem('scenes', sceneId);
+        await SceneDB.removeItem('scenes', sceneId);
         setScenes(scenes.filter(scene => scene.id !== sceneId));
       } catch (error) {
         console.error('Failed to delete scene:', error);
@@ -84,8 +93,8 @@ const Scenes = () => {
     
     // Refresh scenes list
     try {
-      await jsonDB.init();
-      const scenesData = await jsonDB.getAllItems('scenes');
+      await SceneDB.init();
+      const scenesData = await SceneDB.getAllItems('scenes');
       setScenes(scenesData || []);
     } catch (error) {
       console.error('Failed to refresh scenes:', error);
