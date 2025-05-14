@@ -89,42 +89,7 @@ const mockAutomations = [
   },
 ];
 
-// Add the missing AutomationModal component
-const AutomationModal = ({ isOpen, onClose, editAutomation }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="glass rounded-xl p-6 w-full max-w-lg">
-        <h2 className="text-xl font-medium mb-4">
-          {editAutomation ? "Edit Automation" : "New Automation"}
-        </h2>
-        <div className="mb-4">
-          <p className="text-sm text-foreground/70">
-            {editAutomation
-              ? `Editing: ${editAutomation.name}`
-              : "Create a new automation"}
-          </p>
-          {/* Form would go here */}
-        </div>
-        <div className="flex justify-end gap-3">
-          <button
-            className="px-4 py-2 text-sm rounded-lg bg-white/10 hover:bg-white/20"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 text-sm rounded-lg bg-primary text-white"
-            onClick={onClose}
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import AutomationModal from "@/components/modals/AutomationModal";
 
 const AutomationCard = ({ automation, isEnabled, onToggle, onEdit }) => {
   return (

@@ -54,7 +54,8 @@ class DBAdapter {
 }
 
 import SceneDB from "./db/scene.db.js";
+import AutomationDB from "./db/automation.db.js";
 
 export const RoomDB = new DBAdapter("rooms");
 export const DeviceDB = new DBAdapter("devices");
-export { SceneDB };
+export { SceneDB, AutomationDB };

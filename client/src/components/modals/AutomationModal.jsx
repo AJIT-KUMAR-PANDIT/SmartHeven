@@ -47,8 +47,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
           setName(editAutomation.name);
           setDescription(editAutomation.description);
           setSelectedCondition(
-            conditionTypes.find((t) => t.type === editAutomation.conditionType) ||
-              conditionTypes[0]
+            conditionTypes.find(
+              (t) => t.type === editAutomation.conditionType
+            ) || conditionTypes[0]
           );
           setTime(editAutomation.time || "");
           setDays(editAutomation.days || []);
@@ -72,7 +73,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
           variant: "destructive",
         });
       }
-    }
+    };
+
+    loadData();
   }, [isOpen, editAutomation]);
 
   const handleSubmit = async () => {
@@ -101,7 +104,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
 
       toast({
         title: `Automation ${editAutomation ? "Updated" : "Created"}`,
-        description: `Successfully ${editAutomation ? "updated" : "created"} the automation.`,
+        description: `Successfully ${
+          editAutomation ? "updated" : "created"
+        } the automation.`,
       });
 
       setIsLoading(false);
@@ -124,7 +129,7 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
       title={editAutomation ? "Edit Automation" : "Create Automation"}
       width="max-w-lg"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 overflow-y-scroll h-[75vh]">
         {/* Name */}
         <div>
           <label className="block text-sm mb-2">Name</label>
@@ -167,7 +172,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
                 <condition.icon
                   size={24}
                   className={`mb-2 ${
-                    selectedCondition.type === condition.type ? "text-primary" : ""
+                    selectedCondition.type === condition.type
+                      ? "text-primary"
+                      : ""
                   }`}
                 />
                 <span className="text-xs text-center">{condition.name}</span>
@@ -228,7 +235,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   if (selectedDevices.includes(device.id)) {
-                    setSelectedDevices(selectedDevices.filter((id) => id !== device.id));
+                    setSelectedDevices(
+                      selectedDevices.filter((id) => id !== device.id)
+                    );
                   } else {
                     setSelectedDevices([...selectedDevices, device.id]);
                   }
@@ -242,7 +251,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
                 <div className="w-8 h-8 rounded-md bg-black/20 flex items-center justify-center mr-2">
                   <Smartphone
                     size={16}
-                    className={selectedDevices.includes(device.id) ? "text-primary" : ""}
+                    className={
+                      selectedDevices.includes(device.id) ? "text-primary" : ""
+                    }
                   />
                 </div>
                 <span className="text-sm">{device.name}</span>
@@ -254,7 +265,10 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
         {/* Enabled */}
         <div className="flex items-center justify-between">
           <label className="block text-sm">Enabled</label>
-          <div className="relative inline-flex" onClick={() => setIsEnabled(!isEnabled)}>
+          <div
+            className="relative inline-flex"
+            onClick={() => setIsEnabled(!isEnabled)}
+          >
             <input
               type="checkbox"
               className="sr-only"
