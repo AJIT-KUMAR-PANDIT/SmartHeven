@@ -56,7 +56,8 @@ class DBAdapter {
 import SceneDB from "./db/scene.db.js";
 import AutomationDB from "./db/automation.db.js";
 import SettingsDB from "./db/settings.db.js";
+import IotUrlDB from "./db/ioturl.db.js";
 
 export const RoomDB = new DBAdapter("rooms");
 export const DeviceDB = new DBAdapter("devices");
-export { SceneDB, AutomationDB, SettingsDB };
+export { SceneDB, AutomationDB, SettingsDB, IotUrlDB };

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
-import { SettingsDB } from "@/database_lowdb/db";
+import { IotUrlDB } from "@/database_lowdb/db";
 
 import { useTheme } from "@/components/ui/theme-provider.jsx";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -90,18 +90,10 @@ const Settings = () => {
 
     const loadSettings = async () => {
       try {
-        await SettingsDB.init();
-        const url = await SettingsDB.getIotUrl();
-        if (isMounted) {
-          setIotUrl(url);
+        const urls = await IotUrlDB.getAllItems();
+        if (isMounted && urls.length > 0) {
+          setIotUrl(urls[0].url);
         }
-
-        // Subscribe to real-time updates
-        unsubscribe = SettingsDB.subscribe((settings) => {
-          if (isMounted) {
-            setIotUrl(settings.iotUrl);
-          }
-        });
       } catch (error) {
         console.error("Failed to load IoT settings:", error);
         if (isMounted) {
@@ -289,7 +281,7 @@ const Settings = () => {
                     ) {
                       url = `http://${url}`;
                     }
-                    await SettingsDB.setIotUrl(url);
+                    await IotUrlDB.save(IotUrlDB.generateId(), { url });
                     toast({
                       title: "Success",
                       description: "IoT URL saved successfully",
