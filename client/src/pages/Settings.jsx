@@ -1,26 +1,31 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Moon, 
-  Sun, 
-  Monitor, 
-  Lock, 
-  Bell, 
-  LayoutGrid, 
-  Users, 
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Moon,
+  Sun,
+  Monitor,
+  Lock,
+  Bell,
+  LayoutGrid,
+  Users,
   Database,
   Trash2,
   Eye,
   EyeOff,
   Check,
-  X
-} from 'lucide-react';
-import { useTheme } from '@/components/ui/theme-provider.jsx';
-import ThemeToggle from '@/components/ThemeToggle';
+  X,
+  Globe,
+} from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { SettingsDB } from "@/database_lowdb/db";
+
+import { useTheme } from "@/components/ui/theme-provider.jsx";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const SettingSection = ({ title, icon: Icon, children }) => {
   return (
-    <motion.div 
+    <motion.div
       className="glass rounded-xl p-5 neumorphic mb-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -32,10 +37,8 @@ const SettingSection = ({ title, icon: Icon, children }) => {
         </div>
         <h3 className="text-lg font-medium">{title}</h3>
       </div>
-      
-      <div className="space-y-4">
-        {children}
-      </div>
+
+      <div className="space-y-4">{children}</div>
     </motion.div>
   );
 };
@@ -48,15 +51,16 @@ const ToggleSetting = ({ label, description, enabled, onToggle }) => {
         <p className="text-xs text-foreground/60">{description}</p>
       </div>
       <div className="relative inline-flex" onClick={onToggle}>
-        <input
-          type="checkbox"
-          className="sr-only"
-          checked={enabled}
-          readOnly
-        />
+        <input type="checkbox" className="sr-only" checked={enabled} readOnly />
         <motion.div
-          className={`block w-14 h-8 rounded-full transition-colors duration-200 ${enabled ? 'bg-primary' : 'bg-white/10'}`}
-          animate={{ backgroundColor: enabled ? 'hsl(var(--primary))' : 'rgba(255, 255, 255, 0.1)' }}
+          className={`block w-14 h-8 rounded-full transition-colors duration-200 ${
+            enabled ? "bg-primary" : "bg-white/10"
+          }`}
+          animate={{
+            backgroundColor: enabled
+              ? "hsl(var(--primary))"
+              : "rgba(255, 255, 255, 0.1)",
+          }}
         />
         <motion.div
           className="absolute left-1 top-1 bg-white w-6 h-6 rounded-full"
@@ -77,7 +81,47 @@ const Settings = () => {
   const [biometricsEnabled, setBiometricsEnabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
-  
+  const [iotUrl, setIotUrl] = useState("");
+  const [isSavingIot, setIsSavingIot] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe;
+
+    const loadSettings = async () => {
+      try {
+        await SettingsDB.init();
+        const url = await SettingsDB.getIotUrl();
+        if (isMounted) {
+          setIotUrl(url);
+        }
+
+        // Subscribe to real-time updates
+        unsubscribe = SettingsDB.subscribe((settings) => {
+          if (isMounted) {
+            setIotUrl(settings.iotUrl);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to load IoT settings:", error);
+        if (isMounted) {
+          toast({
+            title: "Error",
+            description: "Failed to load IoT settings",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    loadSettings();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
   const handleReset = () => {
     if (!resetConfirm) {
       setResetConfirm(true);
@@ -89,12 +133,12 @@ const Settings = () => {
       setResetConfirm(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen pb-28 md:pb-6 bg-background">
       <div className="p-4 md:p-6">
         <header className="mb-6">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -102,7 +146,7 @@ const Settings = () => {
           >
             Settings
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -111,21 +155,30 @@ const Settings = () => {
             Customize your SmartHaven experience
           </motion.p>
         </header>
-        
+
         {/* Theme Settings */}
         <SettingSection title="Appearance" icon={Moon}>
           <ThemeToggle />
-          
+
           <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2">Current Theme: <span className="text-primary capitalize">{theme}</span></h4>
+            <h4 className="text-sm font-medium mb-2">
+              Current Theme:{" "}
+              <span className="text-primary capitalize">{theme}</span>
+            </h4>
             <div className="glass rounded-lg p-4 flex items-center">
               <div className="flex-1">
-                <p className="text-sm">{theme === 'dark' ? 'Dark theme preserves battery on OLED screens' : theme === 'light' ? 'Light theme improves readability in bright environments' : 'System theme automatically adapts to your device settings'}</p>
+                <p className="text-sm">
+                  {theme === "dark"
+                    ? "Dark theme preserves battery on OLED screens"
+                    : theme === "light"
+                    ? "Light theme improves readability in bright environments"
+                    : "System theme automatically adapts to your device settings"}
+                </p>
               </div>
               <div className="ml-4">
-                {theme === 'dark' ? (
+                {theme === "dark" ? (
                   <Moon className="text-primary" size={24} />
-                ) : theme === 'light' ? (
+                ) : theme === "light" ? (
                   <Sun className="text-warning" size={24} />
                 ) : (
                   <Monitor className="text-foreground/70" size={24} />
@@ -134,19 +187,19 @@ const Settings = () => {
             </div>
           </div>
         </SettingSection>
-        
+
         {/* Notification Settings */}
         <SettingSection title="Notifications" icon={Bell}>
-          <ToggleSetting 
-            label="Push Notifications" 
+          <ToggleSetting
+            label="Push Notifications"
             description="Get alerts about device status and events"
             enabled={notificationsEnabled}
             onToggle={() => setNotificationsEnabled(!notificationsEnabled)}
           />
-          
+
           <div className="p-3">
             <p className="text-sm font-medium mb-2">Notification Schedule</p>
-            <motion.select 
+            <motion.select
               className="w-full glass px-3 py-2 rounded-lg text-sm bg-transparent cursor-pointer"
               whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
               whileTap={{ scale: 0.98 }}
@@ -158,48 +211,48 @@ const Settings = () => {
             </motion.select>
           </div>
         </SettingSection>
-        
+
         {/* Privacy Settings */}
         <SettingSection title="Privacy & Security" icon={Lock}>
-          <ToggleSetting 
-            label="Location Services" 
+          <ToggleSetting
+            label="Location Services"
             description="Allow app to use your location for automations"
             enabled={locationEnabled}
             onToggle={() => setLocationEnabled(!locationEnabled)}
           />
-          
-          <ToggleSetting 
-            label="Analytics" 
+
+          <ToggleSetting
+            label="Analytics"
             description="Share anonymous usage data to improve our service"
             enabled={analyticsEnabled}
             onToggle={() => setAnalyticsEnabled(!analyticsEnabled)}
           />
-          
-          <ToggleSetting 
-            label="Biometric Authentication" 
+
+          <ToggleSetting
+            label="Biometric Authentication"
             description="Use Face ID or fingerprint to authenticate"
             enabled={biometricsEnabled}
             onToggle={() => setBiometricsEnabled(!biometricsEnabled)}
           />
-          
+
           <div className="p-3">
             <p className="text-sm font-medium mb-2">App Password</p>
             <div className="flex">
               <div className="relative flex-1">
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
                   className="w-full h-10 pl-3 pr-10 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:border-primary/50"
                   value="••••••••••••"
                   readOnly
                 />
-                <button 
+                <button
                   className="absolute right-3 top-2.5 text-foreground/60"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <motion.button 
+              <motion.button
                 className="ml-2 px-3 py-2 glass rounded-lg text-xs"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -209,20 +262,74 @@ const Settings = () => {
             </div>
           </div>
         </SettingSection>
-        
+
+        {/* IoT Configuration */}
+        <SettingSection title="IoT Configuration" icon={Globe}>
+          <div className="p-3">
+            <p className="text-sm font-medium mb-2">IoT Server URL</p>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={iotUrl}
+                onChange={(e) => setIotUrl(e.target.value)}
+                placeholder="Enter IoT server URL (e.g., http://localhost:3000)"
+                className="flex-1"
+              />
+              <motion.button
+                className="px-4 py-2 glass rounded-lg text-sm font-medium"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={async () => {
+                  setIsSavingIot(true);
+                  try {
+                    let url = iotUrl.trim();
+                    if (
+                      !url.startsWith("http://") &&
+                      !url.startsWith("https://")
+                    ) {
+                      url = `http://${url}`;
+                    }
+                    await SettingsDB.setIotUrl(url);
+                    toast({
+                      title: "Success",
+                      description: "IoT URL saved successfully",
+                    });
+                  } catch (error) {
+                    console.error("Failed to save IoT URL:", error);
+                    toast({
+                      title: "Error",
+                      description: "Failed to save IoT URL",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsSavingIot(false);
+                  }
+                }}
+                disabled={isSavingIot}
+              >
+                {isSavingIot ? "Saving..." : "Save"}
+              </motion.button>
+            </div>
+            <p className="text-xs text-foreground/60 mt-1">
+              Configure the URL for your IoT server to enable device
+              communication
+            </p>
+          </div>
+        </SettingSection>
+
         {/* General Settings */}
         <SettingSection title="General" icon={LayoutGrid}>
-          <ToggleSetting 
-            label="Power Saving Mode" 
+          <ToggleSetting
+            label="Power Saving Mode"
             description="Reduce animations and background processes"
             enabled={powerSavingEnabled}
             onToggle={() => setPowerSavingEnabled(!powerSavingEnabled)}
           />
-          
+
           <div className="p-3">
             <p className="text-sm font-medium mb-2">Data Storage</p>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full bg-primary"
                 initial={{ width: 0 }}
                 animate={{ width: "65%" }}
@@ -234,7 +341,7 @@ const Settings = () => {
               <span className="text-xs text-foreground/60">5 GB total</span>
             </div>
           </div>
-          
+
           <div className="p-3">
             <p className="text-sm font-medium mb-2">Connected Accounts</p>
             <div className="grid grid-cols-2 gap-2">
@@ -249,7 +356,7 @@ const Settings = () => {
             </div>
           </div>
         </SettingSection>
-        
+
         {/* Reset Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -262,10 +369,13 @@ const Settings = () => {
               Reset Application
             </h3>
             <p className="text-sm text-foreground/60 mb-4">
-              This action will reset all settings and data to factory defaults. This cannot be undone.
+              This action will reset all settings and data to factory defaults.
+              This cannot be undone.
             </p>
-            <motion.button 
-              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center ${resetConfirm ? 'bg-danger text-white' : 'glass text-danger'}`}
+            <motion.button
+              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center ${
+                resetConfirm ? "bg-danger text-white" : "glass text-danger"
+              }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleReset}
@@ -295,7 +405,7 @@ const Settings = () => {
             )}
           </div>
         </motion.div>
-        
+
         <div className="mt-8 text-center text-xs text-foreground/40">
           <p>SmartHaven v1.0.3</p>
           <p className="mt-1">© 2025 SmartHaven. All rights reserved.</p>
