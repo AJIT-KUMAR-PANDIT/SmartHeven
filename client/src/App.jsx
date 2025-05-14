@@ -19,6 +19,10 @@ function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Initialize databases
+        RoomDB.init();
+        DeviceDB.init();
+
         const loadedRooms = await RoomDB.getAllItems("rooms");
         const loadedDevices = await DeviceDB.getAllItems("devices");
         setRooms(Object.values(loadedRooms));
@@ -26,6 +30,21 @@ function App() {
         if (Object.values(loadedRooms).length > 0) {
           setActiveRoom(Object.values(loadedRooms)[0].id);
         }
+
+        // Subscribe to database changes
+        const unsubscribeRooms = RoomDB.subscribe((updatedRooms) => {
+          setRooms(Object.values(updatedRooms));
+        });
+
+        const unsubscribeDevices = DeviceDB.subscribe((updatedDevices) => {
+          setDevices(Object.values(updatedDevices));
+        });
+
+        // Cleanup subscriptions
+        return () => {
+          unsubscribeRooms();
+          unsubscribeDevices();
+        };
       } catch (err) {
         console.error("Error loading data:", err);
       }

@@ -19,14 +19,29 @@ import { RoomDB } from "@/database_lowdb/db";
 RoomDB.init();
 
 const roomTypes = [
-  { icon: Sofa, name: "Living Room", type: "living" },
-  { icon: UtensilsCrossed, name: "Kitchen", type: "kitchen" },
-  { icon: Bed, name: "Bedroom", type: "bedroom" },
-  { icon: Bath, name: "Bathroom", type: "bathroom" },
-  { icon: Tv, name: "Media Room", type: "media" },
-  { icon: MonitorPlay, name: "Office", type: "office" },
-  { icon: Footprints, name: "Hallway", type: "hallway" },
-  { icon: Home, name: "Other", type: "other" },
+  { icon: "Sofa", name: "Living Room", type: "living", component: Sofa },
+  {
+    icon: "UtensilsCrossed",
+    name: "Kitchen",
+    type: "kitchen",
+    component: UtensilsCrossed,
+  },
+  { icon: "Bed", name: "Bedroom", type: "bedroom", component: Bed },
+  { icon: "Bath", name: "Bathroom", type: "bathroom", component: Bath },
+  { icon: "Tv", name: "Media Room", type: "media", component: Tv },
+  {
+    icon: "MonitorPlay",
+    name: "Office",
+    type: "office",
+    component: MonitorPlay,
+  },
+  {
+    icon: "Footprints",
+    name: "Hallway",
+    type: "hallway",
+    component: Footprints,
+  },
+  { icon: "Home", name: "Other", type: "other", component: Home },
 ];
 
 const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
@@ -142,7 +157,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
                     : "bg-white/5 border border-white/10"
                 }`}
               >
-                <type.icon
+                <type.component
                   size={24}
                   className={`mb-2 ${
                     selectedType.name === type.name ? "text-primary" : ""
