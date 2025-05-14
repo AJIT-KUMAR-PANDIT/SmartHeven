@@ -1,109 +1,57 @@
-class CustomEventEmitter {
-  constructor() {
-    this.listeners = new Map();
-  }
+import { Low } from "lowdb";
+import { LocalStorage } from "lowdb/browser";
 
-  on(event, callback) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
-    }
-    this.listeners.get(event).add(callback);
-  }
+const baseSchema = {
+  rooms: [],
+  devices: [],
+};
 
-  off(event, callback) {
-    if (this.listeners.has(event)) {
-      this.listeners.get(event).delete(callback);
-    }
-  }
-
-  emit(event, data) {
-    if (this.listeners.has(event)) {
-      this.listeners.get(event).forEach((callback) => callback(data));
-    }
-  }
-}
-
-class Database {
+class DBAdapter {
   constructor(name) {
-    this.name = name;
-    this.data = {};
-    this.eventEmitter = new CustomEventEmitter();
+    const adapter = new LocalStorage(name);
+    this.db = new Low(adapter, structuredClone(baseSchema));
+    this.subscribers = new Set();
   }
 
-  init() {
-    try {
-      const storedData = localStorage.getItem(this.name);
-      this.data = storedData ? JSON.parse(storedData) : {};
-    } catch (error) {
-      console.error(`Error initializing ${this.name} database:`, error);
-      this.data = {};
+  async init() {
+    await this.db.read();
+    this.db.data ||= structuredClone(baseSchema);
+    await this.db.write();
+  }
+
+  subscribe(callback) {
+    this.subscribers.add(callback);
+    return () => this.subscribers.delete(callback);
+  }
+
+  async save(collection, id, data) {
+    await this.db.read();
+    const index = this.db.data[collection].findIndex((item) => item.id === id);
+
+    if (index > -1) {
+      this.db.data[collection][index] = data;
+    } else {
+      this.db.data[collection].push(data);
     }
+
+    await this.db.write();
+    this.notifySubscribers(collection);
+  }
+
+  async getAllItems(collection) {
+    await this.db.read();
+    return this.db.data[collection] || [];
   }
 
   generateId() {
-    return Math.random().toString(36).substr(2, 9);
+    return crypto.randomUUID();
   }
 
-  async getAllItems(collection = "") {
-    try {
-      const key = collection || this.name;
-      const storedData = localStorage.getItem(key);
-      return storedData ? JSON.parse(storedData) : {};
-    } catch (error) {
-      console.error(`Error getting items from ${this.name}:`, error);
-      return {};
-    }
-  }
-
-  async save(id, data) {
-    try {
-      // Get current data
-      const currentData = await this.getAllItems(this.name);
-
-      // Update data
-      const updatedData = {
-        ...currentData,
-        [id]: data,
-      };
-
-      // Save to localStorage
-      localStorage.setItem(this.name, JSON.stringify(updatedData));
-
-      // Emit change event
-      this.eventEmitter.emit("change", updatedData);
-
-      return true;
-    } catch (error) {
-      console.error(`Error saving to ${this.name}:`, error);
-      return false;
-    }
-  }
-
-  async delete(id) {
-    try {
-      const currentData = await this.getAllItems(this.name);
-      delete currentData[id];
-
-      localStorage.setItem(this.name, JSON.stringify(currentData));
-
-      // Emit change event
-      this.eventEmitter.emit("change", currentData);
-
-      return true;
-    } catch (error) {
-      console.error(`Error deleting from ${this.name}:`, error);
-      return false;
-    }
-  }
-
-  // Subscribe to changes
-  subscribe(callback) {
-    this.eventEmitter.on("change", callback);
-    return () => this.eventEmitter.off("change", callback);
+  notifySubscribers(collection) {
+    const data = this.db.data[collection];
+    this.subscribers.forEach((cb) => cb(data));
   }
 }
 
-// Create database instances
-export const RoomDB = new Database("rooms");
-export const DeviceDB = new Database("devices");
-export const SceneDB = new Database("scenes");
+export const RoomDB = new DBAdapter("rooms");
+export const DeviceDB = new DBAdapter("devices");

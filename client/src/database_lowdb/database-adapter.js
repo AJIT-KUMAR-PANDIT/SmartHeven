@@ -1,6 +1,8 @@
 import { openDB } from "idb";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
+import { Low } from "lowdb";
+import { LocalStorage } from "lowdb/browser";
 
 const isMobile = () => {
   try {
@@ -40,30 +42,19 @@ export class CapacitorAdapter {
 
 // Adapter for IndexedDB (Web)
 export class IndexedDBAdapter {
-  constructor(dbName = "lowdb", storeName = "main") {
-    this.dbName = dbName;
-    this.storeName = storeName;
-  }
-
-  async _initDB() {
-    return openDB(this.dbName, 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains("main")) {
-          db.createObjectStore("main");
-        }
-      },
-    });
+  constructor(dbName = "lowdb") {
+    this.adapter = new LocalStorage(dbName);
+    this.db = new Low(this.adapter, {});
   }
 
   async read() {
-    const db = await this._initDB();
-    const result = await db.get("main", "data");
-    return result || null;
+    await this.db.read();
+    return this.db.data || null;
   }
 
   async write(data) {
-    const db = await this._initDB();
-    await db.put("main", data, "data");
+    this.db.data = data;
+    await this.db.write();
   }
 }
 

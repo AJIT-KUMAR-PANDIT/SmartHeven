@@ -25,19 +25,19 @@ function App() {
 
         const loadedRooms = await RoomDB.getAllItems("rooms");
         const loadedDevices = await DeviceDB.getAllItems("devices");
-        setRooms(Object.values(loadedRooms));
-        setDevices(Object.values(loadedDevices));
+        setRooms(loadedRooms);
+        setDevices(loadedDevices);
         if (Object.values(loadedRooms).length > 0) {
           setActiveRoom(Object.values(loadedRooms)[0].id);
         }
 
         // Subscribe to database changes
         const unsubscribeRooms = RoomDB.subscribe((updatedRooms) => {
-          setRooms(Object.values(updatedRooms));
+          setRooms(updatedRooms);
         });
 
         const unsubscribeDevices = DeviceDB.subscribe((updatedDevices) => {
-          setDevices(Object.values(updatedDevices));
+          setDevices(updatedDevices);
         });
 
         // Cleanup subscriptions

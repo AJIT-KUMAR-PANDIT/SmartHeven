@@ -19,29 +19,14 @@ import { RoomDB } from "@/database_lowdb/db";
 RoomDB.init();
 
 const roomTypes = [
-  { icon: "Sofa", name: "Living Room", type: "living", component: Sofa },
-  {
-    icon: "UtensilsCrossed",
-    name: "Kitchen",
-    type: "kitchen",
-    component: UtensilsCrossed,
-  },
-  { icon: "Bed", name: "Bedroom", type: "bedroom", component: Bed },
-  { icon: "Bath", name: "Bathroom", type: "bathroom", component: Bath },
-  { icon: "Tv", name: "Media Room", type: "media", component: Tv },
-  {
-    icon: "MonitorPlay",
-    name: "Office",
-    type: "office",
-    component: MonitorPlay,
-  },
-  {
-    icon: "Footprints",
-    name: "Hallway",
-    type: "hallway",
-    component: Footprints,
-  },
-  { icon: "Home", name: "Other", type: "other", component: Home },
+  { name: "LivingRoom", type: "LivingRoom", component: Sofa },
+  { name: "Kitchen", type: "Kitchen", component: UtensilsCrossed },
+  { name: "Bedroom", type: "Bedroom", component: Bed },
+  { name: "Bathroom", type: "Bathroom", component: Bath },
+  { name: "MediaRoom", type: "MediaRoom", component: Tv },
+  { name: "Office", type: "Office", component: MonitorPlay },
+  { name: "Hallway", type: "Hallway", component: Footprints },
+  { name: "Other", type: "Other", component: Home },
 ];
 
 const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
@@ -79,7 +64,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
         id: editRoom?.id || RoomDB.generateId(),
         name: roomName.trim(),
         type: selectedType.type,
-        icon: selectedType.name, // Store icon name instead of component
+        icon: selectedType.type, // Store type identifier instead of name
         floor: parseInt(floor),
         devices: editRoom?.devices || [],
       };
@@ -87,7 +72,7 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
       // Save to database
       await RoomDB.init();
       const newId = editRoom?.id || RoomDB.generateId();
-      await RoomDB.save(newId, { ...roomData, id: newId });
+      await RoomDB.save("rooms", newId, { ...roomData, id: newId });
 
       setIsLoading(false);
       onClose();
@@ -121,14 +106,14 @@ const RoomModal = ({ isOpen, onClose, editRoom = null }) => {
             whileTap={{ scale: 0.97 }}
             onClick={() => {
               const names = [
-                "Living Room",
+                "LivingRoom",
                 "Kitchen",
-                "Master Bedroom",
-                "Guest Room",
+                "MasterBedroom",
+                "GuestRoom",
                 "Bathroom",
                 "Office",
-                "Game Room",
-                "Dining Room",
+                "GameRoom",
+                "DiningRoom",
                 "Hallway",
               ];
               const randomName =
