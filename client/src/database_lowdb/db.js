@@ -53,5 +53,8 @@ class DBAdapter {
   }
 }
 
+import SceneDB from "./db/scene.db.js";
+
 export const RoomDB = new DBAdapter("rooms");
 export const DeviceDB = new DBAdapter("devices");
+export { SceneDB };

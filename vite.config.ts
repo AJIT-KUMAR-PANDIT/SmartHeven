@@ -11,7 +11,7 @@ export default defineConfig({
     process.env.REPL_ID !== undefined
       ? [
           await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
+            m.cartographer()
           ),
         ]
       : []),
@@ -27,5 +27,13 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+  },
+  server: {
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "1840-2401-4900-1c36-4bf7-7d17-32e9-dd9a-7b27.ngrok-free.app", // ✅ add your ngrok subdomain here
+    ],
+    host: true, // or '0.0.0.0' to listen on all interfaces
   },
 });
