@@ -1,35 +1,32 @@
-import { motion } from 'framer-motion';
-import { useLocation } from 'wouter';
-import { Bell, Search } from 'lucide-react';
-import { useState } from 'react';
-import SearchModal from './SearchModal';
+import { motion } from "framer-motion";
+import { useLocation } from "wouter";
+import { Bell, Search } from "lucide-react";
 
-const TopNav = () => {
+const TopNav = ({ isSearchOpen, setIsSearchOpen }) => {
   const [location] = useLocation();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
+
   // Get the current page title based on the location
   const getPageTitle = () => {
     switch (location) {
-      case '/':
-        return 'Dashboard';
-      case '/devices':
-        return 'Devices';
-      case '/scenes':
-        return 'Scenes';
-      case '/automations':
-        return 'Automations';
-      case '/analytics':
-        return 'Analytics';
-      case '/settings':
-        return 'Settings';
+      case "/":
+        return "Dashboard";
+      case "/devices":
+        return "Devices";
+      case "/scenes":
+        return "Scenes";
+      case "/automations":
+        return "Automations";
+      case "/analytics":
+        return "Analytics";
+      case "/settings":
+        return "Settings";
       default:
-        return 'SmartHaven';
+        return "SmartHaven";
     }
   };
 
   return (
-    <motion.header 
+    <motion.header
       className="fixed top-0 left-0 right-0 md:left-[18rem] lg:left-[20rem] flex items-center justify-between px-4 h-16 bg-black/60 backdrop-blur-lg z-20 border-b border-white/10"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -49,12 +46,12 @@ const TopNav = () => {
           Smart<span className="text-primary">Haven</span>
         </h1>
       </div>
-      
+
       {/* Center - Page Title (only visible on mobile) */}
       <h2 className="absolute left-1/2 transform -translate-x-1/2 font-medium text-sm md:hidden">
         {getPageTitle()}
       </h2>
-      
+
       {/* Right Actions */}
       <div className="flex items-center space-x-1">
         <motion.button
@@ -64,8 +61,7 @@ const TopNav = () => {
         >
           <Search size={18} />
         </motion.button>
-        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-        
+
         <motion.button
           whileTap={{ scale: 0.92 }}
           className="w-9 h-9 rounded-full flex items-center justify-center glass relative"

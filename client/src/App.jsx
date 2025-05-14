@@ -9,8 +9,10 @@ import Sidebar from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { RoomDB, DeviceDB } from "@/database_lowdb/db";
 import SplashWelcome from "./components/SplashWelcome";
+import SearchModal from "@/components/SearchModal";
 
 function App() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [devices, setDevices] = useState([]);
@@ -62,7 +64,14 @@ function App() {
             authed="location.reload()"
             src="https://auth.util.repl.co/script.js"
           ></script>
-          <TopNav />
+          <TopNav
+            isSearchOpen={isSearchOpen}
+            setIsSearchOpen={setIsSearchOpen}
+          />
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+          />
           <div className="flex h-[calc(100vh-4rem)]">
             <Sidebar
               isMobileOpen={isMobileMenuOpen}

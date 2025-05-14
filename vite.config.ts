@@ -32,7 +32,7 @@ export default defineConfig({
     allowedHosts: [
       "localhost",
       "127.0.0.1",
-      "1840-2401-4900-1c36-4bf7-7d17-32e9-dd9a-7b27.ngrok-free.app", // ✅ add your ngrok subdomain here
+      "814f-2401-4900-1c36-4bf7-f9cd-b609-96cc-2986.ngrok-free.app", // ✅ add your ngrok subdomain here
     ],
     host: true, // or '0.0.0.0' to listen on all interfaces
   },

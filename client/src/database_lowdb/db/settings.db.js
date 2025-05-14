@@ -14,11 +14,24 @@ class SettingsDB extends BaseDB {
   }
 
   async setIotUrl(url) {
-    const settings = await super.getAllItems(this.collection);
-    settings.iotUrl = url;
-    await super.save(this.collection, "iotUrl", settings);
-    this.notifySubscribers(settings);
-    return url;
+    if (typeof url !== "string") {
+      throw new Error("URL must be a string");
+    }
+
+    try {
+      // Validate the URL format before saving
+      if (!url.match(/^https?:\/\/.+/)) {
+        throw new Error("URL must start with http:// or https://");
+      }
+
+      const settings = { iotUrl: url };
+      await super.save(this.collection, "settings", settings);
+      this.notifySubscribers(settings);
+      return url;
+    } catch (error) {
+      console.error("Failed to save IoT URL:", error);
+      throw error;
+    }
   }
 
   subscribe(callback) {

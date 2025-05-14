@@ -129,7 +129,7 @@ const SearchModal = ({ isOpen, onClose }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-4 sm:top-20 left-1/2 -translate-x-1/2 w-[95%] sm:w-full max-w-2xl bg-black/90 rounded-2xl p-3 sm:p-4 z-50 border border-white/20 shadow-xl max-h-[90vh] overflow-hidden flex flex-col"
+            className="fixed  w-[95%] sm:w-full max-w-2xl bg-black/90 rounded-2xl p-3 sm:p-4 z-[500] border border-white/20 shadow-xl max-h-[90vh] overflow-hidden flex flex-col"
           >
             {/* Search Input */}
             <div className="relative mb-3 sm:mb-4 flex-shrink-0">
