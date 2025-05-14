@@ -126,6 +126,37 @@ const Settings = () => {
     }
   };
 
+  const handleSaveIotUrl = async () => {
+    setIsSavingIot(true);
+    try {
+      let url = iotUrl.trim();
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = `http://${url}`;
+      }
+
+      // Clear existing URLs before saving new one
+      const existingUrls = await IotUrlDB.getAllItems();
+      await Promise.all(existingUrls.map((url) => IotUrlDB.remove(url.id)));
+
+      // Save new URL
+      await IotUrlDB.save(IotUrlDB.generateId(), { url });
+
+      toast({
+        title: "Success",
+        description: "IoT URL saved successfully",
+      });
+    } catch (error) {
+      console.error("Failed to save IoT URL:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save IoT URL",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingIot(false);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-28 md:pb-6 bg-background">
       <div className="p-4 md:p-6">
@@ -271,32 +302,7 @@ const Settings = () => {
                 className="px-4 py-2 glass rounded-lg text-sm font-medium"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={async () => {
-                  setIsSavingIot(true);
-                  try {
-                    let url = iotUrl.trim();
-                    if (
-                      !url.startsWith("http://") &&
-                      !url.startsWith("https://")
-                    ) {
-                      url = `http://${url}`;
-                    }
-                    await IotUrlDB.save(IotUrlDB.generateId(), { url });
-                    toast({
-                      title: "Success",
-                      description: "IoT URL saved successfully",
-                    });
-                  } catch (error) {
-                    console.error("Failed to save IoT URL:", error);
-                    toast({
-                      title: "Error",
-                      description: "Failed to save IoT URL",
-                      variant: "destructive",
-                    });
-                  } finally {
-                    setIsSavingIot(false);
-                  }
-                }}
+                onClick={handleSaveIotUrl}
                 disabled={isSavingIot}
               >
                 {isSavingIot ? "Saving..." : "Save"}
