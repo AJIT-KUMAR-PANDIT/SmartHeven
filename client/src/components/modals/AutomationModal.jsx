@@ -10,10 +10,11 @@ import {
   Layers,
   Save,
   Plus,
+  Smartphone,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
-import { AutomationDB } from "@/database_lowdb/db";
+import { AutomationDB, DeviceDB } from "@/database_lowdb/db";
 
 const conditionTypes = [
   { icon: Clock, name: "Time", type: "time" },
@@ -31,28 +32,45 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
   const [days, setDays] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [devices, setDevices] = useState([]);
+  const [selectedDevices, setSelectedDevices] = useState([]);
 
-  // Populate form if editing
+  // Load devices and populate form if editing
   useEffect(() => {
-    if (isOpen) {
-      if (editAutomation) {
-        setName(editAutomation.name);
-        setDescription(editAutomation.description);
-        setSelectedCondition(
-          conditionTypes.find((t) => t.type === editAutomation.conditionType) ||
-            conditionTypes[0]
-        );
-        setTime(editAutomation.time || "");
-        setDays(editAutomation.days || []);
-        setIsEnabled(editAutomation.isEnabled || false);
-      } else {
-        // Reset form for new automation
-        setName("");
-        setDescription("");
-        setSelectedCondition(conditionTypes[0]);
-        setTime("");
-        setDays([]);
-        setIsEnabled(false);
+    const loadData = async () => {
+      try {
+        await DeviceDB.init();
+        const devicesData = await DeviceDB.getAllItems();
+        setDevices(Object.values(devicesData) || []);
+
+        if (editAutomation) {
+          setName(editAutomation.name);
+          setDescription(editAutomation.description);
+          setSelectedCondition(
+            conditionTypes.find((t) => t.type === editAutomation.conditionType) ||
+              conditionTypes[0]
+          );
+          setTime(editAutomation.time || "");
+          setDays(editAutomation.days || []);
+          setIsEnabled(editAutomation.isEnabled || false);
+          setSelectedDevices(editAutomation.devices || []);
+        } else {
+          // Reset form for new automation
+          setName("");
+          setDescription("");
+          setSelectedCondition(conditionTypes[0]);
+          setTime("");
+          setDays([]);
+          setIsEnabled(false);
+          setSelectedDevices([]);
+        }
+      } catch (error) {
+        console.error("Failed to load data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load devices. Please try again.",
+          variant: "destructive",
+        });
       }
     }
   }, [isOpen, editAutomation]);
@@ -72,7 +90,9 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
         time,
         days,
         isEnabled,
-        lastUpdated: Date.now(),
+        devices: selectedDevices,
+        createdAt: editAutomation?.createdAt || Date.now(),
+        updatedAt: Date.now(),
       };
 
       // Save to database
@@ -197,6 +217,39 @@ const AutomationModal = ({ isOpen, onClose, editAutomation = null }) => {
             </div>
           </div>
         )}
+
+        {/* Device Selection */}
+        <div>
+          <label className="block text-sm mb-2">Select Devices</label>
+          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+            {devices.map((device) => (
+              <motion.button
+                key={device.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (selectedDevices.includes(device.id)) {
+                    setSelectedDevices(selectedDevices.filter((id) => id !== device.id));
+                  } else {
+                    setSelectedDevices([...selectedDevices, device.id]);
+                  }
+                }}
+                className={`flex items-center p-3 rounded-lg ${
+                  selectedDevices.includes(device.id)
+                    ? "bg-primary/20 border border-primary/50"
+                    : "bg-white/5 border border-white/10"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-md bg-black/20 flex items-center justify-center mr-2">
+                  <Smartphone
+                    size={16}
+                    className={selectedDevices.includes(device.id) ? "text-primary" : ""}
+                  />
+                </div>
+                <span className="text-sm">{device.name}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
 
         {/* Enabled */}
         <div className="flex items-center justify-between">
