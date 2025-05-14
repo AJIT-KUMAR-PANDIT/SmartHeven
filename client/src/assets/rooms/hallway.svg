@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1E2A" />
+      <stop offset="100%" style="stop-color:#2F2F42" />
+    </linearGradient>
+    <linearGradient id="floorGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#292938" />
+      <stop offset="100%" style="stop-color:#1E1E2A" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="400" fill="url(#bgGradient)" />
+  
+  <!-- Floor -->
+  <path d="M50,300 L750,300 L750,350 L50,350 Z" fill="url(#floorGradient)" opacity="0.7" />
+  
+  <!-- Hallway Walls -->
+  <path d="M100,100 L700,100 L700,300 L100,300 Z" fill="none" stroke="#8B5CF6" stroke-width="2" opacity="0.4" />
+  
+  <!-- Hallway Perspective -->
+  <path d="M150,120 L650,120 L650,280 L150,280 Z" fill="none" stroke="#8B5CF6" stroke-width="1" opacity="0.6" />
+  <path d="M200,140 L600,140 L600,260 L200,260 Z" fill="none" stroke="#8B5CF6" stroke-width="1" opacity="0.6" />
+  <path d="M250,160 L550,160 L550,240 L250,240 Z" fill="none" stroke="#8B5CF6" stroke-width="1" opacity="0.6" />
+  
+  <!-- Doors -->
+  <rect x="180" y="140" width="60" height="120" rx="2" fill="#211F30" stroke="#8B5CF6" stroke-width="1" />
+  <rect x="380" y="140" width="60" height="120" rx="2" fill="#211F30" stroke="#8B5CF6" stroke-width="1" />
+  <rect x="560" y="140" width="60" height="120" rx="2" fill="#211F30" stroke="#8B5CF6" stroke-width="1" />
+  <circle cx="230" cy="200" r="5" fill="#A78BFA" />
+  <circle cx="430" cy="200" r="5" fill="#A78BFA" />
+  <circle cx="610" cy="200" r="5" fill="#A78BFA" />
+  
+  <!-- Floor Runner -->
+  <rect x="150" y="280" width="500" height="20" fill="#2D2A48" stroke="#8B5CF6" stroke-width="1" opacity="0.6" />
+  <rect x="200" y="280" width="400" height="10" fill="#211F30" stroke="#8B5CF6" stroke-width="1" opacity="0.6" />
+  
+  <!-- Wall Pictures -->
+  <rect x="230" y="180" width="30" height="20" rx="1" fill="#211F30" stroke="#A78BFA" stroke-width="1" />
+  <rect x="430" y="180" width="30" height="20" rx="1" fill="#211F30" stroke="#A78BFA" stroke-width="1" />
+  <rect x="330" y="160" width="20" height="30" rx="1" fill="#211F30" stroke="#A78BFA" stroke-width="1" />
+  <rect x="530" y="160" width="20" height="30" rx="1" fill="#211F30" stroke="#A78BFA" stroke-width="1" />
+  
+  <!-- Hallway Lights -->
+  <circle cx="300" cy="120" r="10" fill="none" stroke="#A78BFA" stroke-width="1" />
+  <circle cx="300" cy="120" r="5" fill="#A78BFA" opacity="0.5" />
+  <circle cx="500" cy="120" r="10" fill="none" stroke="#A78BFA" stroke-width="1" />
+  <circle cx="500" cy="120" r="5" fill="#A78BFA" opacity="0.5" />
+  
+  <!-- Smart Hallway Elements -->
+  <rect x="150" y="160" width="20" height="40" rx="2" fill="#211F30" stroke="#A78BFA" stroke-width="1" />
+  <circle cx="160" cy="180" r="5" fill="#A78BFA" opacity="0.5" />
+  
+  <!-- Ambient Light Strips -->
+  <rect x="150" y="260" width="500" height="2" fill="#A78BFA" opacity="0.3" />
+  <rect x="150" y="140" width="500" height="2" fill="#A78BFA" opacity="0.3" />
+  
+  <!-- Smart Lighting Effect -->
+  <circle cx="400" cy="200" r="80" fill="none" stroke="#A78BFA" stroke-width="1" opacity="0.05" />
+  <circle cx="400" cy="200" r="60" fill="none" stroke="#A78BFA" stroke-width="1" opacity="0.05" />
+  <circle cx="400" cy="200" r="40" fill="none" stroke="#A78BFA" stroke-width="1" opacity="0.05" />
+  
+  <!-- Decorative Lines -->
+  <path d="M50,370 L750,370" stroke="#8B5CF6" stroke-width="1" opacity="0.3" />
+  <path d="M50,380 L750,380" stroke="#8B5CF6" stroke-width="1" opacity="0.3" />
+  
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#FFFFFF">Hallway</text>
+  
+  <!-- Futuristic UI Elements -->
+  <rect x="50" y="30" width="100" height="25" rx="12" fill="none" stroke="#A78BFA" stroke-width="1" />
+  <rect x="650" y="30" width="100" height="25" rx="12" fill="none" stroke="#A78BFA" stroke-width="1" />
+  <circle cx="65" cy="42" r="8" fill="#A78BFA" opacity="0.8" />
+  <circle cx="735" cy="42" r="8" fill="#A78BFA" opacity="0.8" />
+</svg>

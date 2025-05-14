@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0B1B32" />
+      <stop offset="100%" style="stop-color:#172E4D" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="400" fill="url(#bgGradient)" />
+  
+  <!-- Floor -->
+  <path d="M50,300 L750,300 L750,350 L50,350 Z" fill="#1E293B" opacity="0.7" />
+  
+  <!-- Walls -->
+  <path d="M100,100 L700,100 L700,300 L100,300 Z" fill="none" stroke="#3B82F6" stroke-width="2" opacity="0.4" />
+  
+  <!-- Windows -->
+  <rect x="550" y="120" width="120" height="80" fill="#1E293B" stroke="#60A5FA" stroke-width="1" />
+  <line x1="610" y1="120" x2="610" y2="200" stroke="#60A5FA" stroke-width="1" />
+  
+  <!-- Bed -->
+  <rect x="150" y="150" width="280" height="140" rx="5" fill="#172E4D" stroke="#3B82F6" stroke-width="2" />
+  <rect x="150" y="150" width="280" height="40" rx="5" fill="#172E4D" stroke="#3B82F6" stroke-width="2" />
+  <rect x="160" y="160" width="260" height="20" rx="5" fill="#0F2447" stroke="#3B82F6" stroke-width="1" />
+  <rect x="160" y="190" width="260" height="90" rx="2" fill="#0F2447" stroke="#3B82F6" stroke-width="1" />
+  
+  <!-- Nightstands -->
+  <rect x="100" y="170" width="40" height="60" rx="2" fill="#172E4D" stroke="#3B82F6" stroke-width="1" />
+  <rect x="440" y="170" width="40" height="60" rx="2" fill="#172E4D" stroke="#3B82F6" stroke-width="1" />
+  
+  <!-- Lamps -->
+  <path d="M120,170 L120,140" stroke="#3B82F6" stroke-width="1" />
+  <path d="M460,170 L460,140" stroke="#3B82F6" stroke-width="1" />
+  <circle cx="120" cy="130" r="10" fill="none" stroke="#60A5FA" stroke-width="1" />
+  <circle cx="460" cy="130" r="10" fill="none" stroke="#60A5FA" stroke-width="1" />
+  
+  <!-- Dresser -->
+  <rect x="550" y="220" width="120" height="70" rx="2" fill="#172E4D" stroke="#3B82F6" stroke-width="2" />
+  <rect x="560" y="230" width="30" height="50" rx="1" fill="#0F2447" stroke="#3B82F6" stroke-width="1" />
+  <rect x="595" y="230" width="30" height="50" rx="1" fill="#0F2447" stroke="#3B82F6" stroke-width="1" />
+  <rect x="630" y="230" width="30" height="50" rx="1" fill="#0F2447" stroke="#3B82F6" stroke-width="1" />
+  
+  <!-- Mirror -->
+  <rect x="580" y="120" width="60" height="80" rx="2" fill="#0F2447" stroke="#60A5FA" stroke-width="1" />
+  
+  <!-- Smart Bedroom Elements -->
+  <rect x="110" y="180" width="20" height="30" rx="2" fill="#0C1D35" stroke="#60A5FA" stroke-width="1" />
+  <circle cx="120" cy="190" r="5" fill="#60A5FA" opacity="0.8" />
+  <rect x="450" y="180" width="20" height="30" rx="2" fill="#0C1D35" stroke="#60A5FA" stroke-width="1" />
+  <circle cx="460" cy="190" r="5" fill="#60A5FA" opacity="0.8" />
+  
+  <!-- Smart Lighting -->
+  <circle cx="400" cy="100" r="30" fill="none" stroke="#FFEB3B" stroke-width="1" opacity="0.2" />
+  <circle cx="400" cy="100" r="20" fill="none" stroke="#FFEB3B" stroke-width="1" opacity="0.3" />
+  <circle cx="400" cy="100" r="10" fill="#FFEB3B" opacity="0.3" />
+  
+  <!-- Decorative Lines -->
+  <path d="M50,370 L750,370" stroke="#3B82F6" stroke-width="1" opacity="0.3" />
+  <path d="M50,380 L750,380" stroke="#3B82F6" stroke-width="1" opacity="0.3" />
+  
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#FFFFFF">Bedroom</text>
+  
+  <!-- Futuristic UI Elements -->
+  <rect x="50" y="30" width="100" height="25" rx="12" fill="none" stroke="#60A5FA" stroke-width="1" />
+  <rect x="650" y="30" width="100" height="25" rx="12" fill="none" stroke="#60A5FA" stroke-width="1" />
+  <circle cx="65" cy="42" r="8" fill="#60A5FA" opacity="0.8" />
+  <circle cx="735" cy="42" r="8" fill="#60A5FA" opacity="0.8" />
+</svg>

@@ -1,0 +1,10 @@
+{
+    "bedroom": "./bedroom.svg",
+    "bathroom": "./bathroom.svg",
+    "kitchen": "./kitchen.svg",
+    "livingroom": "./living-room.svg",
+    "hallway": "./hallway.svg",
+    "media-room": "./media-room.svg",
+    "office": "./office.svg",
+    "other_generic_room_svg": "./other_generic_room.svg"
+}

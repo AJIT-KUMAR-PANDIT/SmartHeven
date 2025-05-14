@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F2027" />
+      <stop offset="100%" style="stop-color:#203A43" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="400" fill="url(#bgGradient)" />
+  
+  <!-- Floor -->
+  <path d="M50,300 L750,300 L750,350 L50,350 Z" fill="#34495E" opacity="0.7" />
+  
+  <!-- Walls -->
+  <path d="M100,100 L700,100 L700,300 L100,300 Z" fill="none" stroke="#78909C" stroke-width="2" opacity="0.5" />
+  
+  <!-- Kitchen Island -->
+  <rect x="300" y="200" width="200" height="80" rx="2" fill="#263238" stroke="#78909C" stroke-width="2" />
+  <rect x="310" y="190" width="180" height="10" rx="2" fill="#455A64" stroke="#78909C" stroke-width="1" />
+  
+  <!-- Kitchen Sink -->
+  <rect x="350" y="210" width="60" height="40" rx="2" fill="#455A64" stroke="#90A4AE" stroke-width="1" />
+  <circle cx="380" cy="230" r="10" fill="none" stroke="#90A4AE" stroke-width="1" />
+  <path d="M370,245 L390,245" stroke="#90A4AE" stroke-width="1" />
+  
+  <!-- Kitchen Cabinets -->
+  <rect x="150" y="120" width="300" height="60" rx="2" fill="#263238" stroke="#78909C" stroke-width="2" />
+  <rect x="160" y="130" width="60" height="40" rx="2" fill="#455A64" stroke="#78909C" stroke-width="1" />
+  <rect x="230" y="130" width="60" height="40" rx="2" fill="#455A64" stroke="#78909C" stroke-width="1" />
+  <rect x="300" y="130" width="60" height="40" rx="2" fill="#455A64" stroke="#78909C" stroke-width="1" />
+  <rect x="370" y="130" width="60" height="40" rx="2" fill="#455A64" stroke="#78909C" stroke-width="1" />
+  
+  <!-- Stove -->
+  <rect x="500" y="120" width="120" height="60" rx="2" fill="#263238" stroke="#78909C" stroke-width="2" />
+  <circle cx="530" cy="140" r="15" fill="none" stroke="#78909C" stroke-width="1" />
+  <circle cx="530" cy="140" r="10" fill="none" stroke="#78909C" stroke-width="1" />
+  <circle cx="530" cy="140" r="5" fill="none" stroke="#78909C" stroke-width="1" />
+  <circle cx="590" cy="140" r="15" fill="none" stroke="#78909C" stroke-width="1" />
+  <circle cx="590" cy="140" r="10" fill="none" stroke="#78909C" stroke-width="1" />
+  <circle cx="590" cy="140" r="5" fill="none" stroke="#78909C" stroke-width="1" />
+  
+  <!-- Refrigerator -->
+  <rect x="650" y="120" width="80" height="160" rx="2" fill="#37474F" stroke="#78909C" stroke-width="2" />
+  <rect x="655" y="125" width="70" height="80" rx="1" fill="#263238" stroke="#78909C" stroke-width="1" />
+  <rect x="655" y="215" width="70" height="60" rx="1" fill="#263238" stroke="#78909C" stroke-width="1" />
+  <rect x="675" y="190" width="10" height="5" rx="1" fill="#90A4AE" />
+  <rect x="675" y="210" width="10" height="5" rx="1" fill="#90A4AE" />
+  
+  <!-- Smart Kitchen Elements -->
+  <rect x="440" y="210" width="30" height="40" rx="2" fill="#263238" stroke="#4FC3F7" stroke-width="1" />
+  <circle cx="455" cy="225" r="8" fill="#29B6F6" opacity="0.8" />
+  <circle cx="455" cy="245" r="3" fill="#29B6F6" opacity="0.8" />
+  
+  <!-- Smart Lighting -->
+  <circle cx="400" cy="100" r="30" fill="none" stroke="#FFEB3B" stroke-width="1" opacity="0.3" />
+  <circle cx="400" cy="100" r="20" fill="none" stroke="#FFEB3B" stroke-width="1" opacity="0.5" />
+  <circle cx="400" cy="100" r="10" fill="#FFEB3B" opacity="0.5" />
+  
+  <!-- Decorative Lines -->
+  <path d="M50,370 L750,370" stroke="#78909C" stroke-width="1" opacity="0.3" />
+  <path d="M50,380 L750,380" stroke="#78909C" stroke-width="1" opacity="0.3" />
+  
+  <!-- Title -->
+  <text x="400" y="50" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#FFFFFF">Kitchen</text>
+  
+  <!-- Futuristic UI Elements -->
+  <rect x="50" y="30" width="100" height="25" rx="12" fill="none" stroke="#4FC3F7" stroke-width="1" />
+  <rect x="650" y="30" width="100" height="25" rx="12" fill="none" stroke="#4FC3F7" stroke-width="1" />
+  <circle cx="65" cy="42" r="8" fill="#4FC3F7" opacity="0.8" />
+  <circle cx="735" cy="42" r="8" fill="#4FC3F7" opacity="0.8" />
+</svg>
