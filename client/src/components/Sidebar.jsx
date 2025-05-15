@@ -177,7 +177,7 @@ const Sidebar = ({
           </div>
 
           {/* Theme Toggle */}
-          <div className="fixed bottom-16 w-[85%] glass rounded-xl p-4 mb-4">
+          <div className="lg:fixed bottom-16 w-[85%] glass rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-medium">Theme Mode</h3>
               <span className="text-xs text-primary capitalize">{theme}</span>
@@ -223,7 +223,7 @@ const Sidebar = ({
           </div>
 
           {/* User Profile */}
-          <div className="fixed bottom-0 w-[85%] flex items-center mt-4 px-2 mb-2">
+          <div className="lg:fixed bottom-0 w-[85%] flex items-center mt-4 px-2 mb-2">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-medium">
               JS
             </div>
