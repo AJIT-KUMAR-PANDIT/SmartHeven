@@ -7,6 +7,7 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/not-found";
 import RoomsPage from "./pages/rooms";
+import AuthPage from "./pages/AuthPage";
 
 export default function Router() {
   return (
@@ -18,6 +19,7 @@ export default function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/rooms" component={RoomsPage} />
       <Route path="/settings" component={Settings} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );

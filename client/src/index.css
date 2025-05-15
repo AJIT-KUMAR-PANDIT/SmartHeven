@@ -84,7 +84,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background-image: 
+    background-image:
       radial-gradient(circle at 15% 50%, hsla(var(--primary)/0.08) 0%, transparent 25%),
       radial-gradient(circle at 85% 30%, hsla(var(--secondary)/0.08) 0%, transparent 25%);
   }
@@ -100,7 +100,7 @@
   }
 
   .neumorphic {
-    box-shadow: 
+    box-shadow:
       inset 2px 2px 5px rgba(255, 255, 255, 0.08),
       inset -2px -2px 5px rgba(0, 0, 0, 0.5),
       5px 5px 15px rgba(0, 0, 0, 0.2);
@@ -145,7 +145,7 @@
   .card-3d:hover .card-3d-inner {
     transform: translateZ(30px) rotateX(4deg) rotateY(4deg);
   }
-  
+
   /* Advanced animations */
   .animate-gradient {
     background-size: 200% 200%;
@@ -156,43 +156,47 @@
     0% {
       background-position: 0% 50%;
     }
+
     50% {
       background-position: 100% 50%;
     }
+
     100% {
       background-position: 0% 50%;
     }
   }
-  
+
   .hover-float {
     transition: transform 0.3s ease;
   }
-  
+
   .hover-float:hover {
     transform: translateY(-8px);
   }
-  
+
   .pulse-shadow {
     animation: pulseShadow 3s infinite;
   }
-  
+
   @keyframes pulseShadow {
     0% {
       box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
     }
+
     70% {
       box-shadow: 0 0 0 15px rgba(33, 150, 243, 0);
     }
+
     100% {
       box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
     }
   }
-  
+
   .shimmer {
     position: relative;
     overflow: hidden;
   }
-  
+
   .shimmer::after {
     content: '';
     position: absolute;
@@ -203,10 +207,19 @@
     background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
     animation: shimmerEffect 2s infinite;
   }
-  
+
   @keyframes shimmerEffect {
     100% {
       left: 150%;
     }
   }
+}
+
+/* Auth Page Glass Inputs */
+.glass-input-group {
+  @apply flex items-center p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md;
+}
+
+.glass-input {
+  @apply flex-1 ml-3 bg-transparent placeholder-white/30 text-sm focus:outline-none;
 }
