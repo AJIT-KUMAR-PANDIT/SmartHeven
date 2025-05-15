@@ -20,13 +20,13 @@ RoomDB.init();
 
 const roomTypes = [
   { name: "LivingRoom", type: "LivingRoom", component: Sofa },
-  { name: "Kitchen", type: "Kitchen", component: UtensilsCrossed },
-  { name: "Bedroom", type: "Bedroom", component: Bed },
-  { name: "Bathroom", type: "Bathroom", component: Bath },
-  { name: "MediaRoom", type: "MediaRoom", component: Tv },
-  { name: "Office", type: "Office", component: MonitorPlay },
-  { name: "Hallway", type: "Hallway", component: Footprints },
-  { name: "Other", type: "Other", component: Home },
+  { name: "Kitchen", type: "kitchen", component: UtensilsCrossed },
+  { name: "Bedroom", type: "bedroom", component: Bed },
+  { name: "Bathroom", type: "bathroom", component: Bath },
+  { name: "Media Room", type: "media_room", component: Tv },
+  { name: "Office", type: "office", component: MonitorPlay },
+  { name: "Hallway", type: "hallway", component: Footprints },
+  { name: "Other", type: "other", component: Home },
 ];
 
 const RoomModal = ({ isOpen, onClose, editRoom = null }) => {

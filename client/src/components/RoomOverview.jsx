@@ -1,11 +1,22 @@
 import { useState } from "react";
-import { Eye, TrendingDown } from "lucide-react";
+import { Eye, TrendingDown, Edit, Trash2, Plus, List } from "lucide-react";
 import { motion } from "framer-motion";
 
-const RoomOverview = ({ roomData }) => {
+export const RoomOverview = ({
+  roomData,
+  onEdit,
+  onDelete,
+  onAddDevice,
+  onShowDevices,
+  roomImages,
+}) => {
   const [viewMode, setViewMode] = useState("regular");
+  const [showDeviceList, setShowDeviceList] = useState(false);
 
   if (!roomData) return null;
+
+  // Get the correct image path based on room type
+  const roomImage = roomImages[roomData.type] || roomImages.other;
 
   return (
     <motion.div
@@ -18,7 +29,7 @@ const RoomOverview = ({ roomData }) => {
         {/* Room preview image */}
         <div className="md:col-span-2 relative">
           <img
-            src={roomData.image}
+            src={roomImage}
             alt={`${roomData.name} view`}
             className="rounded-xl w-full h-64 md:h-full object-cover"
           />
@@ -45,50 +56,76 @@ const RoomOverview = ({ roomData }) => {
         <div className="flex flex-col justify-between">
           <div>
             <h3 className="font-display text-lg font-medium mb-2">
-              Room Status
+              {roomData.name}
             </h3>
             <p className="text-sm text-foreground/60 mb-4">
               All systems operating normally
             </p>
 
             <div className="space-y-4">
-              {roomData.stats.map((stat) => (
-                <motion.div
-                  key={stat.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: stat.delay || 0 }}
-                  className="flex items-center"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg glass flex items-center justify-center text-${stat.color}`}
+              {roomData.stats &&
+                roomData.stats.map((stat) => (
+                  <motion.div
+                    key={stat.name}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: stat.delay || 0 }}
+                    className="flex items-center"
                   >
-                    <stat.icon size={18} />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-xs text-foreground/60">{stat.name}</p>
-                    <p className="text-lg font-mono">{stat.value}</p>
-                  </div>
-                  <div className="ml-auto h-2 w-24 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className={`h-full bg-${stat.color} rounded-full`}
-                      style={{ width: `${stat.percentage}%` }}
-                    ></div>
-                  </div>
-                </motion.div>
-              ))}
+                      className={`w-10 h-10 rounded-lg glass flex items-center justify-center text-${stat.color}`}
+                    >
+                      <stat.icon size={18} />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-xs text-foreground/60">{stat.name}</p>
+                      <p className="text-lg font-mono">{stat.value}</p>
+                    </div>
+                    <div className="ml-auto h-2 w-24 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-${stat.color} rounded-full`}
+                        style={{ width: `${stat.percentage}%` }}
+                      ></div>
+                    </div>
+                  </motion.div>
+                ))}
             </div>
           </div>
 
-          <motion.div
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="mt-4"
-          >
-            <button className="w-full bg-gradient-to-r from-primary to-secondary rounded-xl py-3 text-sm font-medium transition hover:opacity-90">
-              Optimize Room
-            </button>
-          </motion.div>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onShowDevices(roomData.id)}
+              className="bg-primary rounded-xl py-2 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              <List size={16} /> Devices
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onEdit(roomData.id)}
+              className="bg-secondary rounded-xl py-2 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              <Edit size={16} /> Edit
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onDelete(roomData.id)}
+              className="bg-destructive rounded-xl py-2 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              <Trash2 size={16} /> Delete
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onAddDevice(roomData.id)}
+              className="bg-success rounded-xl py-2 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              <Plus size={16} /> Add Device
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>

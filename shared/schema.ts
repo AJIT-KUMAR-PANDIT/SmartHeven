@@ -15,3 +15,22 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const rooms = pgTable("rooms", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type")
+    .$type<
+      | "bedroom"
+      | "bathroom"
+      | "kitchen"
+      | "living_room"
+      | "hallway"
+      | "media_room"
+      | "office"
+      | "other"
+    >()
+    .notNull(),
+});
+
+export type Room = typeof rooms.$inferSelect;

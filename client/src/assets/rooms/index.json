@@ -1,10 +1,10 @@
 {
-    "bedroom": "./bedroom.svg",
-    "bathroom": "./bathroom.svg",
-    "kitchen": "./kitchen.svg",
-    "livingroom": "./living-room.svg",
-    "hallway": "./hallway.svg",
-    "media-room": "./media-room.svg",
-    "office": "./office.svg",
-    "other_generic_room_svg": "./other_generic_room.svg"
+    "bedroom": "/assets/rooms/bedroom.svg",
+    "bathroom": "/assets/rooms/bathroom.svg",
+    "kitchen": "/assets/rooms/kitchen.svg",
+    "livingroom": "/assets/rooms/living-room.svg",
+    "hallway": "/assets/rooms/hallway.svg",
+    "media-room": "/assets/rooms/media-room.svg",
+    "office": "/assets/rooms/office.svg",
+    "other_generic_room_svg": "/assets/rooms/other_generic_room.svg"
 }

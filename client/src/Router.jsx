@@ -6,7 +6,7 @@ import Automations from "./pages/Automations";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/not-found";
-import RoomOverview from "./components/RoomOverview";
+import RoomsPage from "./pages/rooms";
 
 export default function Router() {
   return (
@@ -16,7 +16,7 @@ export default function Router() {
       <Route path="/scenes" component={Scenes} />
       <Route path="/automations" component={Automations} />
       <Route path="/analytics" component={Analytics} />
-      <Route path="/rooms" component={RoomOverview} />
+      <Route path="/rooms" component={RoomsPage} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
