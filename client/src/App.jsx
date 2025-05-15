@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { RoomDB, DeviceDB } from "@/database_lowdb/db";
 import SplashWelcome from "./components/SplashWelcome";
 import SearchModal from "@/components/SearchModal";
+import AuthPage from "@/pages/AuthPage";
 
 function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -17,6 +18,8 @@ function App() {
   const [rooms, setRooms] = useState([]);
   const [devices, setDevices] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(true);
 
   // Initialize database and load data
   useEffect(() => {
@@ -58,7 +61,17 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
-        <SplashWelcome />
+        {showAuthModal && (
+          <div className="fixed overflow-y-scroll inset-0 z-[999] bg-background/80 backdrop-blur-sm">
+            <AuthPage
+              onSuccess={() => {
+                setShowAuthModal(false);
+                setIsAuthenticated(true);
+              }}
+            />
+          </div>
+        )}
+        {isAuthenticated && <SplashWelcome />}
         <div className="min-h-screen bg-background">
           <script
             authed="location.reload()"

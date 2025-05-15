@@ -12,9 +12,31 @@ import {
 } from "lucide-react";
 import NumericKeypad from "@/components/ui/NumericKeypad";
 
+import authDB from "@/database_lowdb/db/auth.db.js";
+
 export default function AuthPage() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      if (isLogin) {
+        const isValid = await authDB.validateCredentials(username, password);
+        if (!isValid) throw new Error("Invalid credentials");
+      } else {
+        await authDB.createUser(username, password);
+      }
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message);
+    }
+  };
   const [isLogin, setIsLogin] = useState(true);
+  const [showReset, setShowReset] = useState(false);
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+
+  const [error, setError] = useState(null);
   const { theme } = useTheme();
 
   const handleKeyPress = (value) => {
@@ -26,7 +48,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-screen overflow-y-scroll flex items-center justify-center p-4 bg-background">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -42,7 +64,7 @@ export default function AuthPage() {
           <div className="w-6" />
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="glass-input-group">
               <User className="icon" size={18} />
@@ -50,21 +72,11 @@ export default function AuthPage() {
                 type="text"
                 placeholder="Username"
                 className="glass-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
-
-            {!isLogin && (
-              <div className="glass-input-group">
-                <Smartphone className="icon" size={18} />
-                <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  className="glass-input"
-                  required
-                />
-              </div>
-            )}
 
             <div className="glass-input-group">
               <Lock className="icon" size={18} />
@@ -78,6 +90,45 @@ export default function AuthPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-500 text-sm text-center mb-4">{error}</div>
+          )}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setShowReset(!showReset)}
+              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+            >
+              {showReset ? "Back to Login" : "Forgot Password?"}
+            </button>
+          </div>
+          {showReset && (
+            <div className="glass-panel p-6 rounded-xl space-y-4">
+              <input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="glass-input w-full"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await authDB.resetPassword(username, newPassword);
+                    setError("Password reset successfully");
+                    setShowReset(false);
+                    setNewPassword("");
+                  } catch (err) {
+                    setError(err.message);
+                  }
+                }}
+                className="glass-button w-full py-2"
+              >
+                Reset Password
+              </button>
+            </div>
+          )}
           <NumericKeypad
             onKeyPress={handleKeyPress}
             password={password}
@@ -96,7 +147,10 @@ export default function AuthPage() {
         <p className="text-center mt-6 text-sm opacity-80">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              if (showReset) setShowReset(false);
+              else setIsLogin(!isLogin);
+            }}
             className="ml-2 text-primary hover:underline"
           >
             {isLogin ? "Sign up" : "Login"}

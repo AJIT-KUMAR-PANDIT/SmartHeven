@@ -22,6 +22,11 @@ class BaseDB {
     return this.db.data[collection] || {};
   }
 
+  async getById(collection, id) {
+    if (!this.initialized) await this.init();
+    return this.db.data[collection]?.[id] || null;
+  }
+
   async save(collection, id, data) {
     if (!this.initialized) await this.init();
     if (!this.db.data[collection]) {

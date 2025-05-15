@@ -36,4 +36,7 @@ export default defineConfig({
     ],
     host: true, // or '0.0.0.0' to listen on all interfaces
   },
+  optimizeDeps: {
+    include: ["bcryptjs"],
+  },
 });
