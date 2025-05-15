@@ -1,23 +1,56 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/components/ui/theme-provider";
-import {
-  Lock,
-  User,
-  Smartphone,
-  ChevronLeft,
-  LogIn,
-  UserPlus,
-} from "lucide-react";
+import { Lock, User, ChevronLeft } from "lucide-react";
 import NumericKeypad from "@/components/ui/NumericKeypad";
-
 import authDB from "@/database_lowdb/db/auth.db.js";
+import { Preferences } from "@capacitor/preferences";
 
-export default function AuthPage() {
+export default function AuthPage({ onSuccess }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showReset, setShowReset] = useState(false);
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState(null);
+  const { theme } = useTheme();
+
+  const [users, setUsers] = useState([]);
+
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const userList = await authDB.getAllItems("users");
+      setUsers(
+        Object.values(userList).sort(
+          (a, b) => (b.lastLogin || 0) - (a.lastLogin || 0)
+        )
+      );
+    };
+    loadUsers();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (!username.trim()) {
+      setError("Username is required");
+      return;
+    }
+
+    if (password.length !== 6) {
+      setError("PIN must be 6 digits");
+      return;
+    }
+
+    if (!isLogin && password !== confirmPassword) {
+      setError("PINs must match");
+      return;
+    }
 
     try {
       if (isLogin) {
@@ -26,26 +59,30 @@ export default function AuthPage() {
       } else {
         await authDB.createUser(username, password);
       }
-      window.location.href = "/";
+
+      // Save session
+      await Preferences.set({ key: "isLoggedIn", value: "true" });
+
+      // Call parent hook
+      if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Authentication failed");
     }
   };
-  const [isLogin, setIsLogin] = useState(true);
-  const [showReset, setShowReset] = useState(false);
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-
-  const [error, setError] = useState(null);
-  const { theme } = useTheme();
 
   const handleKeyPress = (value) => {
+    const target =
+      activeInput === "password" ? setPassword : setConfirmPassword;
     if (value === "backspace") {
-      setPassword((prev) => prev.slice(0, -1));
-    } else if (password.length < 6) {
-      setPassword((prev) => prev + value);
+      target((prev) => prev.slice(0, -1));
+    } else if (
+      (activeInput === "password" ? password : confirmPassword).length < 6
+    ) {
+      target((prev) => prev + value);
     }
   };
+
+  const [activeInput, setActiveInput] = useState("password");
 
   return (
     <div className="min-h-screen overflow-y-scroll flex items-center justify-center p-4 bg-background">
@@ -68,14 +105,37 @@ export default function AuthPage() {
           <div className="space-y-4">
             <div className="glass-input-group">
               <User className="icon" size={18} />
-              <input
-                type="text"
-                placeholder="Username"
-                className="glass-input"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
+              {isLogin ? (
+                <select
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="glass-input bg-transparent w-full"
+                >
+                  <option value="">Select User</option>
+                  {users.map((user) => (
+                    <option
+                      key={user.username}
+                      value={user.username}
+                      className={
+                        user.lastLogin > Date.now() - 604800000
+                          ? "text-primary font-medium"
+                          : ""
+                      }
+                    >
+                      {user.username}
+                      {user.lastLogin > Date.now() - 604800000 && " (Recent)"}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="New Username"
+                  className="glass-input"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              )}
             </div>
 
             <div className="glass-input-group">
@@ -86,13 +146,29 @@ export default function AuthPage() {
                 placeholder="Enter PIN"
                 className="glass-input"
                 readOnly
+                onFocus={() => setActiveInput("password")}
               />
             </div>
+
+            {!isLogin && (
+              <div className="glass-input-group">
+                <Lock className="icon" size={18} />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  placeholder="Confirm PIN"
+                  className="glass-input"
+                  readOnly
+                  onFocus={() => setActiveInput("confirm")}
+                />
+              </div>
+            )}
           </div>
 
           {error && (
             <div className="text-red-500 text-sm text-center mb-4">{error}</div>
           )}
+
           <div className="mt-4 text-center">
             <button
               type="button"
@@ -102,6 +178,7 @@ export default function AuthPage() {
               {showReset ? "Back to Login" : "Forgot Password?"}
             </button>
           </div>
+
           {showReset && (
             <div className="glass-panel p-6 rounded-xl space-y-4">
               <input
@@ -129,6 +206,7 @@ export default function AuthPage() {
               </button>
             </div>
           )}
+
           <NumericKeypad
             onKeyPress={handleKeyPress}
             password={password}

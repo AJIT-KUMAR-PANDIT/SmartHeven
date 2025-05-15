@@ -15,13 +15,27 @@ class AuthDB extends BaseDB {
       throw new Error("User already exists");
     }
 
+    if (!username.trim()) {
+      throw new Error("Username is required");
+    }
+
+    if (password.length !== 6 || !/^\d+$/.test(password)) {
+      throw new Error("Password must be 6 digits");
+    }
+
     const hash = bcrypt.hashSync(password, saltRounds);
     return this.save(this.collection, username, { username, hash });
   }
 
   async validateCredentials(username, password) {
     const user = await this.getById(this.collection, username);
-    return user ? bcrypt.compareSync(password, user.hash) : false;
+    if (!user) return false;
+    const isValid = bcrypt.compareSync(password, user.hash);
+    if (isValid) {
+      user.lastLogin = Date.now();
+      await this.save(this.collection, username, user);
+    }
+    return isValid;
   }
 
   async resetPassword(username, newPassword) {

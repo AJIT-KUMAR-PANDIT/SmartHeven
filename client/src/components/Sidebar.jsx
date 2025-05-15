@@ -18,6 +18,7 @@ import {
   Plus,
 } from "lucide-react";
 import RoomModal from "@/components/modals/RoomModal";
+import { Preferences } from "@capacitor/preferences";
 
 const Sidebar = ({
   activeRoom,
@@ -25,6 +26,7 @@ const Sidebar = ({
   rooms,
   isMobileOpen,
   setIsMobileOpen,
+  onLogout, // 👈 This prop comes from App.jsx
 }) => {
   const [location] = useLocation();
   const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
@@ -47,12 +49,31 @@ const Sidebar = ({
     }
   };
 
+  // 🔐 Logout handler
+  const handleLogout = async () => {
+    try {
+      // Clear session data
+      await Preferences.remove({ key: "isLoggedIn" });
+      await Preferences.remove({ key: "loggedInUser" });
+
+      // Notify parent to update state
+      if (onLogout) {
+        onLogout();
+      } else {
+        window.location.reload(); // fallback
+      }
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
   return (
     <>
       {/* Mobile menu button */}
       <button
         className="fixed top-4 right-4 z-50 p-2 rounded-full bg-black/50 backdrop-blur-md text-white md:hidden"
         onClick={toggleMobileMenu}
+        aria-label="Toggle menu"
       >
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -210,7 +231,11 @@ const Sidebar = ({
               <h3 className="text-sm font-medium">John Smith</h3>
               <p className="text-xs opacity-60">Admin</p>
             </div>
-            <button className="ml-auto w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition">
+            <button
+              onClick={handleLogout}
+              className="ml-auto w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
+              aria-label="Logout"
+            >
               <LogOut size={16} />
             </button>
           </div>

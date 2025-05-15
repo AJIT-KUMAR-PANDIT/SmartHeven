@@ -12,6 +12,9 @@ import SplashWelcome from "./components/SplashWelcome";
 import SearchModal from "@/components/SearchModal";
 import AuthPage from "@/pages/AuthPage";
 
+// Capacitor Preferences
+import { Preferences } from "@capacitor/preferences";
+
 function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,34 +22,76 @@ function App() {
   const [devices, setDevices] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false); // controlled by session check
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [sessionTimeout, setSessionTimeout] = useState(null);
 
-  // Initialize database and load data
+  // 🔍 Check session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { value } = await Preferences.get({ key: "isLoggedIn" });
+      const isLoggedIn = value === "true";
+      setIsAuthenticated(isLoggedIn);
+      setShowAuthModal(!isLoggedIn);
+    };
+    checkSession();
+  }, []);
+
+  // 🚶 Activity tracker + Auto logout (15 minutes)
+  useEffect(() => {
+    const resetTimer = () => {
+      setLastActivity(Date.now());
+      if (sessionTimeout) clearTimeout(sessionTimeout);
+      setSessionTimeout(
+        setTimeout(() => {
+          setShowAuthModal(true);
+          setIsAuthenticated(false);
+          Preferences.remove({ key: "isLoggedIn" });
+        }, 900000)
+      ); // 15 minutes
+    };
+
+    const activityListener = () => resetTimer();
+    window.addEventListener("mousemove", activityListener);
+    window.addEventListener("keydown", activityListener);
+    window.addEventListener("touchstart", activityListener);
+    window.addEventListener("scroll", activityListener);
+
+    resetTimer();
+
+    return () => {
+      window.removeEventListener("mousemove", activityListener);
+      window.removeEventListener("keydown", activityListener);
+      window.removeEventListener("touchstart", activityListener);
+      window.removeEventListener("scroll", activityListener);
+      if (sessionTimeout) clearTimeout(sessionTimeout);
+    };
+  }, [sessionTimeout]);
+
+  // 📦 Initialize database and load data
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Initialize databases
         RoomDB.init();
         DeviceDB.init();
 
         const loadedRooms = await RoomDB.getAllItems("rooms");
         const loadedDevices = await DeviceDB.getAllItems("devices");
+
         setRooms(loadedRooms);
         setDevices(loadedDevices);
+
         if (Object.values(loadedRooms).length > 0) {
           setActiveRoom(Object.values(loadedRooms)[0].id);
         }
 
-        // Subscribe to database changes
-        const unsubscribeRooms = RoomDB.subscribe((updatedRooms) => {
-          setRooms(updatedRooms);
-        });
+        const unsubscribeRooms = RoomDB.subscribe((updatedRooms) =>
+          setRooms(updatedRooms)
+        );
+        const unsubscribeDevices = DeviceDB.subscribe((updatedDevices) =>
+          setDevices(updatedDevices)
+        );
 
-        const unsubscribeDevices = DeviceDB.subscribe((updatedDevices) => {
-          setDevices(updatedDevices);
-        });
-
-        // Cleanup subscriptions
         return () => {
           unsubscribeRooms();
           unsubscribeDevices();
@@ -55,28 +100,39 @@ function App() {
         console.error("Error loading data:", err);
       }
     };
-    loadData();
-  }, []);
+
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="smarthaven-theme">
+        {/* Show Auth Modal Only If Not Authenticated */}
         {showAuthModal && (
-          <div className="fixed overflow-y-scroll inset-0 z-[999] bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[999] overflow-y-scroll bg-background/80 backdrop-blur-sm">
             <AuthPage
-              onSuccess={() => {
-                setShowAuthModal(false);
-                setIsAuthenticated(true);
+              onSuccess={async () => {
+                const { value } = await Preferences.get({ key: "isLoggedIn" });
+                const loggedIn = value === "true";
+                setIsAuthenticated(loggedIn);
+                setShowAuthModal(!loggedIn);
               }}
             />
           </div>
         )}
+
         {isAuthenticated && <SplashWelcome />}
+
         <div className="min-h-screen bg-background">
+          {/* Optional Auth Script */}
           <script
             authed="location.reload()"
-            src="https://auth.util.repl.co/script.js"
+            src="https://auth.util.repl.co/script.js "
           ></script>
+
+          {/* Header & UI */}
           <TopNav
             isSearchOpen={isSearchOpen}
             setIsSearchOpen={setIsSearchOpen}
@@ -85,6 +141,7 @@ function App() {
             isOpen={isSearchOpen}
             onClose={() => setIsSearchOpen(false)}
           />
+
           <div className="flex h-[calc(100vh-4rem)]">
             <Sidebar
               isMobileOpen={isMobileMenuOpen}
@@ -92,11 +149,16 @@ function App() {
               rooms={rooms}
               activeRoom={activeRoom}
               onRoomChange={setActiveRoom}
+              onLogout={() => {
+                setIsAuthenticated(false);
+                setShowAuthModal(true);
+              }}
             />
             <main className="md:mt-14 lg:mt-14 flex-1 overflow-y-auto p-4 pt-16 md:pt-4 md:ml-72">
               <Router />
             </main>
           </div>
+
           <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
           <Toaster />
         </div>
